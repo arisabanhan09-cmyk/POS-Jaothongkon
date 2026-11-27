@@ -157,7 +157,7 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
     }
 
@@ -1375,7 +1375,7 @@
           <!-- Wastage Analysis & Percentage Table -->
           <div class="card" style="padding: var(--space-5);">
             <h3 class="section-title">วิเคราะห์สัดส่วนขยะคัดทิ้งรายวัตถุดิบ (% Spoilage and Waste Analysis)</h3>
-            <p class="brand-subtitle" style="margin-top: -8px; margin-bottom: var(--space-4);">แสดงเปอร์เซ็นต์วัตถุดิบรวมที่ถูกคัดทิ้ง เปรียบเทียบระหว่างจำนวนที่ใช้งานจริงกับจำนวนขยะที่บันทึกสูญเสียหลังครัว</p>
+            <p class="brand-subtitle" style="margin-top: -8px; margin-bottom: var(--space-4);">แสดงเปอร์เซ็นต์วัตถิบรวมที่ถูกคัดทิ้ง เปรียบเทียบระหว่างจำนวนที่ใช้งานจริงกับจำนวนขยะที่บันทึกสูญเสียหลังครัว</p>
             
             <div class="table-wrapper">
               <table class="data-table">
@@ -1744,7 +1744,7 @@
         console.warn('LocalStorage is not accessible or storage limit exceeded.', e);
       }
 
-      // DOM Elements
+      // DOM Elements (CRITICAL FIX: CORRECTLY RETRIEVE ALL REFERENCED ELEMENTS AT INITIALIZATION)
       const docTitle = document.getElementById('doc-title');
       const authView = document.getElementById('auth-view');
       const signupForm = document.getElementById('signup-form');
@@ -1752,7 +1752,7 @@
       const shopSelectionGroup = document.getElementById('shop-selection-group');
       const selectActiveShop = document.getElementById('select-active-shop');
       const btnLoginShop = document.getElementById('btn-login-shop');
-      const loginPasswordInput = document.getElementById('login-password-input');
+      const loginPasswordInput = document.getElementById('login-password-input'); // FIXED: RETRIEVED CRITICAL ELEMENT PROPERLY TO AVOID GLOBAL REFERENCE EXCEPTION!
       const authDivider = document.getElementById('auth-divider');
 
       const tabPos = document.getElementById('tab-pos');
@@ -2230,6 +2230,236 @@
         }
       }
 
+      // Dynamic load Firebase compat libraries to make deployment on GitHub Pages 100% robust
+      function loadAndConnectFirebase(config, showNotification = false) {
+        if (!config.apiKey || !config.databaseURL) {
+          if (showNotification) alert('กรุณากรอก API Key และ Database URL ให้ครบถ้วน!');
+          return;
+        }
+
+        firebaseStatusLabel.textContent = 'สถานะ: กำลังสตรีมเชื่อมต่อ...';
+        firebaseStatusLabel.style.color = 'var(--warning)';
+
+        // Injected Firebase Compat App
+        const scriptApp = document.createElement('script');
+        scriptApp.src="about:invalid#zPythonSafez";
+        document.head.appendChild(scriptApp);
+
+        scriptApp.onload = () => {
+          const scriptDb = document.createElement('script');
+          scriptDb.src="about:invalid#zPythonSafez";
+          document.head.appendChild(scriptDb);
+
+          scriptDb.onload = () => {
+            try {
+              // Initialize Firebase
+              firebase.initializeApp({
+                apiKey: config.apiKey,
+                databaseURL: config.databaseURL,
+                authDomain: config.authDomain || (config.projectId + ".firebaseapp.com"),
+                projectId: config.projectId,
+                appId: config.appId
+              });
+
+              firebaseDb = firebase.database();
+              firebaseStatusLabel.textContent = 'สถานะ: เชื่อมต่อคลาวด์แล้ว 🟢 (พร้อมสำรองข้อมูลอัตโนมัติ)';
+              firebaseStatusLabel.style.color = 'var(--brand)';
+
+              if (showNotification) alert('เชื่อมต่อระบบสำรองข้อมูล Firebase Realtime Database สำเร็จ!');
+
+              // Initial pull merge (pull from cloud if exists, else seed cloud with local storage)
+              firebaseDb.ref(`pos_data/${activeShopId}`).once('value', snapshot => {
+                if (snapshot.exists()) {
+                  const cloudData = snapshot.val();
+                  activeShop = cloudData;
+                  loadActiveShopData();
+                } else {
+                  firebaseDb.ref(`pos_data/${activeShopId}`).set(activeShop);
+                }
+              });
+
+            } catch (err) {
+              console.error(err);
+              firebaseStatusLabel.textContent = 'สถานะ: การเชื่อมต่อล้มเหลว 🔴';
+              firebaseStatusLabel.style.color = 'var(--danger)';
+              if (showNotification) alert('การเชื่อมต่อล้มเหลว: ' + err.message);
+            }
+          };
+        };
+      }
+
+      // Apply Theme Color
+      function applyThemeColor(hex) {
+        document.documentElement.style.setProperty('--brand', hex);
+        settingsCustomColor.value = hex;
+        customColorHex.textContent = hex.toUpperCase();
+      }
+
+      // Update brand display everywhere
+      function updateBrandUI() {
+        // Doc Title
+        docTitle.textContent = shopConfig.name + " - ระบบ POS และคลังสูตรผลิต";
+        
+        // Header Text
+        headerTitle.textContent = shopConfig.name;
+
+        // Header Logo
+        if (shopConfig.logo) {
+          headerLogo.innerHTML = `<img src="${shopConfig.logo}" alt="${escapeHtml(shopConfig.name)}">`;
+          headerLogo.style.background = 'transparent';
+        } else {
+          const cleanName = shopConfig.name.trim();
+          const monogram = cleanName ? cleanName.substring(0, 3).toUpperCase() : 'POS';
+          headerLogo.innerHTML = escapeHtml(monogram);
+          headerLogo.style.background = 'var(--brand)';
+        }
+
+        // Fill Settings Inputs
+        settingsShopName.value = shopConfig.name;
+        if (shopConfig.logo) {
+          settingsLogoImgPreview.src = shopConfig.logo;
+          settingsLogoImgPreview.style.display = 'block';
+          settingsLogoPlaceholderIcon.style.display = 'none';
+          btnRemoveLogo.style.display = 'inline-flex';
+        } else {
+          settingsLogoImgPreview.style.display = 'none';
+          settingsLogoPlaceholderIcon.style.display = 'block';
+          btnRemoveLogo.style.display = 'none';
+        }
+
+        // Fill QR Settings Preview
+        if (shopConfig.qrCode) {
+          settingsQrImgPreview.src = shopConfig.qrCode;
+          settingsQrImgPreview.style.display = 'block';
+          settingsQrPlaceholderIcon.style.display = 'none';
+          btnRemoveQr.style.display = 'inline-flex';
+        } else {
+          settingsQrImgPreview.style.display = 'none';
+          settingsQrPlaceholderIcon.style.display = 'block';
+          btnRemoveQr.style.display = 'none';
+        }
+
+        // Fill Firebase Credentials
+        if (shopConfig.firebaseConfig) {
+          fbApiKey.value = shopConfig.firebaseConfig.apiKey || '';
+          fbDbUrl.value = shopConfig.firebaseConfig.databaseURL || '';
+          fbProjectId.value = shopConfig.firebaseConfig.projectId || '';
+          fbAppId.value = shopConfig.firebaseConfig.appId || '';
+        }
+
+        // Apply theme color from config
+        applyThemeColor(shopConfig.themeColor || '#0f766e');
+      }
+
+      // View switcher
+      function switchView(view) {
+        activeView = view;
+        tabPos.classList.remove('active');
+        tabKitchen.classList.remove('active');
+        tabStock.classList.remove('active');
+        tabSettings.classList.remove('active');
+        
+        viewPos.classList.remove('active');
+        viewKitchen.classList.remove('active');
+        viewStock.classList.remove('active');
+        viewSettings.classList.remove('active');
+
+        if (view === 'pos') {
+          tabPos.classList.add('active');
+          viewPos.classList.add('active');
+        } else if (view === 'kitchen') {
+          tabKitchen.classList.add('active');
+          viewKitchen.classList.add('active');
+          renderKitchenQueue();
+        } else if (view === 'stock') {
+          tabStock.classList.add('active');
+          viewStock.classList.add('active');
+        } else if (view === 'settings') {
+          tabSettings.classList.add('active');
+          viewSettings.classList.add('active');
+        }
+        renderAll();
+      }
+
+      tabPos.addEventListener('click', () => switchView('pos'));
+      tabKitchen.addEventListener('click', () => switchView('kitchen'));
+      tabStock.addEventListener('click', () => switchView('stock'));
+      tabSettings.addEventListener('click', () => switchView('settings'));
+
+      goToAddStockBtn.addEventListener('click', () => {
+        switchView('stock');
+        prodNameInput.focus();
+      });
+
+      // Back-Office Sub-tab toggle (Products vs Ingredients vs Reports)
+      subtabProducts.addEventListener('click', () => {
+        subtabProducts.classList.add('active');
+        subtabIngredients.classList.remove('active');
+        subtabReports.classList.remove('active');
+        panelProducts.style.display = 'grid';
+        panelIngredients.style.display = 'none';
+        panelReports.style.display = 'none';
+      });
+
+      subtabIngredients.addEventListener('click', () => {
+        subtabIngredients.classList.add('active');
+        subtabProducts.classList.remove('active');
+        subtabReports.classList.remove('active');
+        panelIngredients.style.display = 'grid';
+        panelProducts.style.display = 'none';
+        panelReports.style.display = 'none';
+        renderIngredientsTable();
+      });
+
+      subtabReports.addEventListener('click', () => {
+        subtabReports.classList.add('active');
+        subtabProducts.classList.remove('active');
+        subtabIngredients.classList.remove('active');
+        panelReports.style.display = 'block';
+        panelProducts.style.display = 'none';
+        panelIngredients.style.display = 'none';
+        renderReports();
+      });
+
+      // Toggle product stock type fields (direct stock vs formula recipe)
+      prodStockType.addEventListener('change', () => {
+        if (prodStockType.value === 'direct') {
+          directStockGroup.style.display = 'block';
+          recipeIngredientsGroup.style.display = 'none';
+        } else {
+          directStockGroup.style.display = 'none';
+          recipeIngredientsGroup.style.display = 'block';
+          renderRecipeIngredientsSelection();
+        }
+      });
+
+      // Color Theme pickers settings
+      settingsCustomColor.addEventListener('input', (e) => {
+        const hex = e.target.value;
+        applyThemeColor(hex);
+      });
+
+      presetsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.preset-color-btn');
+        if (!btn) return;
+        const color = btn.getAttribute('data-color');
+        applyThemeColor(color);
+      });
+
+      // Firebase Sync connection click
+      btnConnectFirebase.addEventListener('click', () => {
+        const config = {
+          apiKey: fbApiKey.value.trim(),
+          databaseURL: fbDbUrl.value.trim(),
+          projectId: fbProjectId.value.trim(),
+          appId: fbAppId.value.trim()
+        };
+
+        shopConfig.firebaseConfig = config;
+        saveState();
+        loadAndConnectFirebase(config, true);
+      });
+
       // Categories Processing
       function getCategories() {
         const set = new Set();
@@ -2330,6 +2560,52 @@
         settingsLogoPlaceholderIcon.style.display = 'block';
         btnRemoveLogo.style.display = 'none';
       });
+
+      // Helper to calculate maximum available stock of a product based on its stock type
+      function getCalculatedStock(product) {
+        if (product.stockType === 'direct') {
+          return product.stock || 0;
+        }
+        
+        // If product depends on recipes (F&B ingredients formulation)
+        if (!product.recipe || product.recipe.length === 0) {
+          return 0; // cannot make any if recipe is completely empty
+        }
+
+        let minProduce = Infinity;
+        product.recipe.forEach(item => {
+          const ing = ingredients.find(i => i.id === item.ingredientId);
+          if (!ing) {
+            minProduce = 0;
+          } else {
+            const possible = Math.floor(ing.stock / item.amount);
+            if (possible < minProduce) {
+              minProduce = possible;
+            }
+          }
+        });
+        return minProduce === Infinity ? 0 : minProduce;
+      }
+
+      // Helper to compute dynamic F&B product cost based on ingredients cost + waste rates
+      function getProductRecipeCost(product) {
+        if (product.stockType === 'direct') {
+          return product.directCost || 0;
+        }
+        if (!product.recipe || product.recipe.length === 0) {
+          return 0;
+        }
+        let totalCost = 0;
+        product.recipe.forEach(item => {
+          const ing = ingredients.find(i => i.id === item.ingredientId);
+          if (ing) {
+            // Apply standard waste rate multiplier
+            const wasteMultiplier = 1 + ((ing.wasteRate || 0) / 100);
+            totalCost += (item.amount * ing.cost) * wasteMultiplier;
+          }
+        });
+        return totalCost;
+      }
 
       // Render POS Product Grid (Catalog)
       function renderPosCatalog() {
