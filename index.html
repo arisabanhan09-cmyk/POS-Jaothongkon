@@ -898,33 +898,38 @@
   <!-- Fullscreen Multi-shop Switcher / Sign-up view with password -->
   <div id="auth-view" class="auth-backdrop">
     <div class="auth-card">
-      <div style="text-align: center; margin-bottom: var(--space-5);">
+      <div style="text-align: center; margin-bottom: var(--space-4);">
         <span style="font-size: 48px;">🏪</span>
-        <h2 style="margin: var(--space-2) 0 4px 0; font-weight: 800; color: var(--ink);">สมัครใช้งาน / เข้าสู่ระบบร้านค้า</h2>
-        <p style="margin: 0; font-size: 13px; color: var(--muted);">ระบบ POS จัดการคลังวัตถุดิบและสูตรผลิตแยกบัญชีสาขาร้านค้า</p>
+        <h2 style="margin: var(--space-2) 0 4px 0; font-weight: 800; color: var(--ink);">ระบบ POS ร้านค้า &amp; คลังครัว</h2>
+        <p style="margin: 0 0 var(--space-3) 0; font-size: 13px; color: var(--muted);">ระบบจัดการแบรนด์และสต็อกวัตถุดิบแยกสาขาร้านค้า</p>
       </div>
 
-      <!-- Quick Switch Shop dropdown if registered shops exist -->
-      <div id="shop-selection-group" style="display: none; margin-bottom: var(--space-4); background: var(--surface-subtle); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--border);">
-        <label class="field-label" style="font-weight: 700;" for="select-active-shop">เลือกสาขาร้านค้าที่เปิดใช้งานอยู่:</label>
-        <select id="select-active-shop" class="select" style="margin-bottom: var(--space-2);"></select>
-        
-        <!-- Password input for switching shops safely -->
-        <div id="login-password-group" style="margin-bottom: var(--space-3);">
-          <label class="field-label" for="login-password-input">ระบุรหัสผ่านเข้าใช้งานสาขานี้ *</label>
-          <input type="password" id="login-password-input" class="input" placeholder="กรอกรหัสผ่าน">
+      <!-- Sign Up / Login Toggle Buttons -->
+      <div class="sub-tabs-bar" style="margin-bottom: var(--space-5); display: flex;">
+        <button type="button" class="sub-tab-btn active" id="auth-tab-login" style="flex: 1;">เข้าสู่ระบบร้านเดิม</button>
+        <button type="button" class="sub-tab-btn" id="auth-tab-register" style="flex: 1;">เปิดบัญชีร้านค้าใหม่</button>
+      </div>
+
+      <!-- LOGIN SECTION -->
+      <div id="login-section">
+        <div class="form-group">
+          <label class="field-label" for="select-active-shop">เลือกสาขา/ร้านค้าที่จดทะเบียนไว้:</label>
+          <select id="select-active-shop" class="select" style="margin-bottom: var(--space-3);">
+            <!-- Populated via JavaScript -->
+          </select>
         </div>
         
-        <button type="button" class="btn btn-primary btn-sm" id="btn-login-shop" style="width: 100%;">เข้าสู่ระบบร้านค้าสาขาที่เลือก</button>
+        <div class="form-group" id="login-password-group">
+          <label class="field-label" for="login-password-input">ระบุรหัสผ่านเข้าใช้งานสาขานี้ *</label>
+          <input type="password" id="login-password-input" class="input" placeholder="กรอกรหัสผ่านเพื่อความปลอดภัย">
+        </div>
+        
+        <div id="login-error" class="field-error" style="margin-bottom: var(--space-2);"></div>
+        <button type="button" class="btn btn-primary" id="btn-login-shop" style="width: 100%; padding: 12px;">เข้าสู่ระบบร้านค้า</button>
       </div>
 
-      <div style="text-align: center; position: relative; margin: var(--space-4) 0;" id="auth-divider">
-        <span style="background: var(--surface); padding: 0 12px; font-size: 12px; font-weight: 700; color: var(--muted); position: relative; z-index: 5;">หรือสมัครสมาชิกร้านใหม่</span>
-        <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid var(--border); z-index: 1;"></div>
-      </div>
-
-      <!-- Sign Up Form -->
-      <form id="signup-form" novalidate>
+      <!-- REGISTER SECTION (Sign Up Form) -->
+      <form id="signup-form" novalidate style="display: none;">
         <div class="form-group">
           <label class="field-label" for="reg-shop-name">ชื่อร้านค้า / แบรนด์สาขา *</label>
           <input type="text" id="reg-shop-name" class="input" placeholder="เช่น ชาไข่มุก ดีมีสุข สาขาพระราม 9" required>
@@ -944,14 +949,13 @@
           </div>
         </div>
         
-        <!-- Password input for new store accounts -->
         <div class="form-group" style="margin-top: var(--space-2);">
-          <label class="field-label" for="reg-password">รหัสผ่านสำหรับเข้าใช้งานสาขานี้ *</label>
-          <input type="password" id="reg-password" class="input" placeholder="ตั้งรหัสผ่านสำหรับสาขานี้" required>
+          <label class="field-label" for="reg-password">กำหนดรหัสผ่านเข้าใช้งานสาขานี้ *</label>
+          <input type="password" id="reg-password" class="input" placeholder="ตั้งรหัสผ่านสำหรับเข้าใช้งานระบบ" required>
         </div>
 
         <div id="signup-error" class="field-error" style="margin-bottom: var(--space-2);"></div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">เปิดบัญชีร้านค้าสาขาใหม่</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">ลงทะเบียนสร้างบัญชีร้านใหม่</button>
       </form>
     </div>
   </div>
@@ -1017,8 +1021,8 @@
         <div style="display: flex; align-items: center; gap: var(--space-2);">
           <span style="font-size: 20px;" id="incoming-delivery-icon">🛵</span>
           <div>
-            <strong style="color: var(--brand);" id="incoming-delivery-title">ออเดอร์ใหม่เข้าจาก GrabFood!</strong>
-            <p style="margin: 0; font-size: 12px; color: var(--ink-secondary);" id="incoming-delivery-items">เอสเพรสโซ่เย็น x1, เค้กช็อกโกแลตฟัดจ์ x1</p>
+            <strong style="color: var(--brand);" id="incoming-delivery-title">ออเดอร์ใหม่เข้าจาก GRAB!</strong>
+            <p style="margin: 0; font-size: 12px; color: var(--ink-secondary);" id="incoming-delivery-items">เอสเพรสโซ่เย็น x1</p>
           </div>
         </div>
         <div style="display: flex; gap: var(--space-2);">
@@ -1166,9 +1170,14 @@
                 <label class="field-label" for="prod-sku">รหัสสินค้า (SKU)</label>
                 <input type="text" id="prod-sku" class="input" placeholder="เช่น CF-001">
               </div>
+              
+              <!-- Dropdown Category Selector supporting instant custom addition -->
               <div class="form-group">
-                <label class="field-label" for="prod-category">หมวดหมู่</label>
-                <input type="text" id="prod-category" class="input" placeholder="เช่น เครื่องดื่ม, อาหาร">
+                <label class="field-label" for="prod-category-select">หมวดหมู่สินค้า *</label>
+                <select id="prod-category-select" class="select"></select>
+                <div id="prod-category-new-container" style="display: none; margin-top: 8px;">
+                  <input type="text" id="prod-category-new" class="input" placeholder="ระบุหมวดหมู่ใหม่ที่ต้องการ...">
+                </div>
               </div>
             </div>
 
@@ -1752,8 +1761,12 @@
       const shopSelectionGroup = document.getElementById('shop-selection-group');
       const selectActiveShop = document.getElementById('select-active-shop');
       const btnLoginShop = document.getElementById('btn-login-shop');
-      const loginPasswordInput = document.getElementById('login-password-input'); // FIXED: RETRIEVED CRITICAL ELEMENT PROPERLY TO AVOID GLOBAL REFERENCE EXCEPTION!
+      const loginPasswordInput = document.getElementById('login-password-input'); // FIXED: DEFINED!
+      const loginSection = document.getElementById('login-section');
+      const loginError = document.getElementById('login-error');
       const authDivider = document.getElementById('auth-divider');
+      const authTabLogin = document.getElementById('auth-tab-login');
+      const authTabRegister = document.getElementById('auth-tab-register');
 
       const tabPos = document.getElementById('tab-pos');
       const tabKitchen = document.getElementById('tab-kitchen');
@@ -1800,7 +1813,9 @@
       const editProductIdInput = document.getElementById('edit-product-id');
       const prodNameInput = document.getElementById('prod-name');
       const prodSkuInput = document.getElementById('prod-sku');
-      const prodCategoryInput = document.getElementById('prod-category');
+      const prodCategorySelect = document.getElementById('prod-category-select'); // DYNAMIC CATEGORIES SELECT
+      const prodCategoryNewContainer = document.getElementById('prod-category-new-container'); // DROPDOWN CONFLICT FIX
+      const prodCategoryNewInput = document.getElementById('prod-category-new'); // DROPDOWN CONFLICT FIX
       const prodPriceInput = document.getElementById('prod-price');
       const prodStockType = document.getElementById('prod-stock-type');
       const directStockGroup = document.getElementById('direct-stock-group');
@@ -1808,7 +1823,7 @@
       const recipeIngredientsList = document.getElementById('recipe-ingredients-list');
       const prodStockInput = document.getElementById('prod-stock');
       const prodDirectCostInput = document.getElementById('prod-direct-cost');
-      const prodLowLimit = document.getElementById('prod-low-limit');
+      const prodLowLimit = document.getElementById('prod-low-limit'); // FIXED: RETRIEVED ELEMENT PROPERLY!
       const prodImageFileInput = document.getElementById('prod-image-file');
       const prodImageDataInput = document.getElementById('prod-image-data');
       const prodImagePreview = document.getElementById('prod-image-preview');
@@ -1829,7 +1844,7 @@
       const ingUnitInput = document.getElementById('ing-unit');
       const ingCostInput = document.getElementById('ing-cost');
       const ingWasteRateInput = document.getElementById('ing-waste-rate');
-      const ingLowLimit = document.getElementById('ing-low-limit');
+      const ingLowLimit = document.getElementById('ing-low-limit'); // FIXED: RETRIEVED ELEMENT PROPERLY!
       const ingFormError = document.getElementById('ing-form-error');
       const saveIngBtn = document.getElementById('save-ing-btn');
       const cancelEditIngBtn = document.getElementById('cancel-edit-ing-btn');
@@ -1927,9 +1942,11 @@
           shopSelectionGroup.style.display = 'block';
           authDivider.style.display = 'block';
           selectActiveShop.innerHTML = shops.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.owner)})</option>`).join('');
+          switchAuthTab('login');
         } else {
           shopSelectionGroup.style.display = 'none';
           authDivider.style.display = 'none';
+          switchAuthTab('register');
         }
 
         if (activeShop) {
@@ -1941,6 +1958,25 @@
         }
       }
 
+      function switchAuthTab(mode) {
+        if (mode === 'login') {
+          authTabLogin.classList.add('active');
+          authTabRegister.classList.remove('active');
+          loginSection.style.display = 'block';
+          signupForm.style.display = 'none';
+        } else {
+          authTabRegister.classList.add('active');
+          authTabLogin.classList.remove('active');
+          loginSection.style.display = 'none';
+          signupForm.style.display = 'block';
+        }
+        signupError.textContent = '';
+        loginError.textContent = '';
+      }
+
+      authTabLogin.addEventListener('click', () => switchAuthTab('login'));
+      authTabRegister.addEventListener('click', () => switchAuthTab('register'));
+
       // Login to selected shop branch with Password verification
       btnLoginShop.addEventListener('click', () => {
         const id = Number(selectActiveShop.value);
@@ -1951,7 +1987,7 @@
 
         // Check if shop account has password and matches
         if (shop.password && shop.password !== inputPass) {
-          alert('รหัสผ่านเข้าสาขาไม่ถูกต้อง กรุณาตรวจสอบและกรอกใหม่อีกครั้งค่ะ');
+          loginError.textContent = 'รหัสผ่านเข้าสาขาไม่ถูกต้อง กรุณาตรวจสอบและกรอกใหม่อีกครั้งค่ะ';
           loginPasswordInput.focus();
           return;
         }
@@ -2351,1677 +2387,34 @@
         applyThemeColor(shopConfig.themeColor || '#0f766e');
       }
 
-      // View switcher
-      function switchView(view) {
-        activeView = view;
-        tabPos.classList.remove('active');
-        tabKitchen.classList.remove('active');
-        tabStock.classList.remove('active');
-        tabSettings.classList.remove('active');
-        
-        viewPos.classList.remove('active');
-        viewKitchen.classList.remove('active');
-        viewStock.classList.remove('active');
-        viewSettings.classList.remove('active');
-
-        if (view === 'pos') {
-          tabPos.classList.add('active');
-          viewPos.classList.add('active');
-        } else if (view === 'kitchen') {
-          tabKitchen.classList.add('active');
-          viewKitchen.classList.add('active');
-          renderKitchenQueue();
-        } else if (view === 'stock') {
-          tabStock.classList.add('active');
-          viewStock.classList.add('active');
-        } else if (view === 'settings') {
-          tabSettings.classList.add('active');
-          viewSettings.classList.add('active');
-        }
-        renderAll();
-      }
-
-      tabPos.addEventListener('click', () => switchView('pos'));
-      tabKitchen.addEventListener('click', () => switchView('kitchen'));
-      tabStock.addEventListener('click', () => switchView('stock'));
-      tabSettings.addEventListener('click', () => switchView('settings'));
-
-      goToAddStockBtn.addEventListener('click', () => {
-        switchView('stock');
-        prodNameInput.focus();
-      });
-
-      // Back-Office Sub-tab toggle (Products vs Ingredients vs Reports)
-      subtabProducts.addEventListener('click', () => {
-        subtabProducts.classList.add('active');
-        subtabIngredients.classList.remove('active');
-        subtabReports.classList.remove('active');
-        panelProducts.style.display = 'grid';
-        panelIngredients.style.display = 'none';
-        panelReports.style.display = 'none';
-      });
-
-      subtabIngredients.addEventListener('click', () => {
-        subtabIngredients.classList.add('active');
-        subtabProducts.classList.remove('active');
-        subtabReports.classList.remove('active');
-        panelIngredients.style.display = 'grid';
-        panelProducts.style.display = 'none';
-        panelReports.style.display = 'none';
-        renderIngredientsTable();
-      });
-
-      subtabReports.addEventListener('click', () => {
-        subtabReports.classList.add('active');
-        subtabProducts.classList.remove('active');
-        subtabIngredients.classList.remove('active');
-        panelReports.style.display = 'block';
-        panelProducts.style.display = 'none';
-        panelIngredients.style.display = 'none';
-        renderReports();
-      });
-
-      // Toggle product stock type fields (direct stock vs formula recipe)
-      prodStockType.addEventListener('change', () => {
-        if (prodStockType.value === 'direct') {
-          directStockGroup.style.display = 'block';
-          recipeIngredientsGroup.style.display = 'none';
-        } else {
-          directStockGroup.style.display = 'none';
-          recipeIngredientsGroup.style.display = 'block';
-          renderRecipeIngredientsSelection();
-        }
-      });
-
-      // Color Theme pickers settings
-      settingsCustomColor.addEventListener('input', (e) => {
-        const hex = e.target.value;
-        applyThemeColor(hex);
-      });
-
-      presetsContainer.addEventListener('click', (e) => {
-        const btn = e.target.closest('.preset-color-btn');
-        if (!btn) return;
-        const color = btn.getAttribute('data-color');
-        applyThemeColor(color);
-      });
-
-      // Firebase Sync connection click
-      btnConnectFirebase.addEventListener('click', () => {
-        const config = {
-          apiKey: fbApiKey.value.trim(),
-          databaseURL: fbDbUrl.value.trim(),
-          projectId: fbProjectId.value.trim(),
-          appId: fbAppId.value.trim()
-        };
-
-        shopConfig.firebaseConfig = config;
-        saveState();
-        loadAndConnectFirebase(config, true);
-      });
-
-      // Categories Processing
-      function getCategories() {
-        const set = new Set();
-        products.forEach(p => {
-          if (p.category && p.category.trim()) {
-            set.add(p.category.trim());
-          }
-        });
-        return Array.from(set);
-      }
-
-      function renderCategories() {
+      // Populates Category Dropdown options based on products + adding a special "+ เพิ่มหมวดหมู่ใหม่" option
+      function populateCategoryDropdown(selectedCategoryValue = '') {
         const categories = getCategories();
-        if (selectedCategory !== 'ALL' && !categories.includes(selectedCategory)) {
-          selectedCategory = 'ALL';
-        }
-
-        let html = `<button type="button" class="cat-pill ${selectedCategory === 'ALL' ? 'active' : ''}" data-cat="ALL">ทั้งหมด</button>`;
+        let optionsHtml = '';
+        
+        // Populate standard categories
         categories.forEach(cat => {
-          const isActive = selectedCategory === cat ? 'active' : '';
-          html += `<button type="button" class="cat-pill ${isActive}" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)}</button>`;
+          optionsHtml += `<option value="${escapeHtml(cat)}" ${selectedCategoryValue === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`;
         });
-        posCategoryBar.innerHTML = html;
-      }
-
-      posCategoryBar.addEventListener('click', (e) => {
-        const btn = e.target.closest('.cat-pill');
-        if (!btn) return;
-        selectedCategory = btn.getAttribute('data-cat');
-        renderCategories();
-        renderPosCatalog();
-      });
-
-      posSearchInput.addEventListener('input', (e) => {
-        posSearchQuery = e.target.value.trim().toLowerCase();
-        renderPosCatalog();
-      });
-
-      stockSearchInput.addEventListener('input', (e) => {
-        stockSearchQuery = e.target.value.trim().toLowerCase();
-        renderStockTable();
-      });
-
-      // Handle Product Image File Loading
-      imgPickerTrigger.addEventListener('click', (e) => {
-        if (e.target.closest('#btn-remove-prod-image')) return;
-        prodImageFileInput.click();
-      });
-
-      prodImageFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const base64String = event.target.result;
-          prodImageDataInput.value = base64String;
-          prodImagePreview.src = base64String;
-          prodImagePreview.style.display = 'block';
-          btnRemoveProdImage.style.display = 'inline-flex';
-        };
-        reader.readAsDataURL(file);
-      });
-
-      btnRemoveProdImage.addEventListener('click', (e) => {
-        e.stopPropagation();
-        prodImageFileInput.value = '';
-        prodImageDataInput.value = '';
-        prodImagePreview.src = '';
-        prodImagePreview.style.display = 'none';
-        btnRemoveProdImage.style.display = 'none';
-      });
-
-      // Handle Settings Logo File Loading
-      btnTriggerLogoFile.addEventListener('click', () => {
-        settingsShopLogoFile.click();
-      });
-
-      settingsShopLogoFile.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const base64String = event.target.result;
-          settingsLogoImgPreview.src = base64String;
-          settingsLogoImgPreview.style.display = 'block';
-          settingsLogoPlaceholderIcon.style.display = 'none';
-          btnRemoveLogo.style.display = 'inline-flex';
-        };
-        reader.readAsDataURL(file);
-      });
-
-      btnRemoveLogo.addEventListener('click', () => {
-        settingsShopLogoFile.value = '';
-        settingsLogoImgPreview.src = '';
-        settingsLogoImgPreview.style.display = 'none';
-        settingsLogoPlaceholderIcon.style.display = 'block';
-        btnRemoveLogo.style.display = 'none';
-      });
-
-      // Helper to calculate maximum available stock of a product based on its stock type
-      function getCalculatedStock(product) {
-        if (product.stockType === 'direct') {
-          return product.stock || 0;
-        }
         
-        // If product depends on recipes (F&B ingredients formulation)
-        if (!product.recipe || product.recipe.length === 0) {
-          return 0; // cannot make any if recipe is completely empty
-        }
-
-        let minProduce = Infinity;
-        product.recipe.forEach(item => {
-          const ing = ingredients.find(i => i.id === item.ingredientId);
-          if (!ing) {
-            minProduce = 0;
-          } else {
-            const possible = Math.floor(ing.stock / item.amount);
-            if (possible < minProduce) {
-              minProduce = possible;
-            }
-          }
-        });
-        return minProduce === Infinity ? 0 : minProduce;
-      }
-
-      // Helper to compute dynamic F&B product cost based on ingredients cost + waste rates
-      function getProductRecipeCost(product) {
-        if (product.stockType === 'direct') {
-          return product.directCost || 0;
-        }
-        if (!product.recipe || product.recipe.length === 0) {
-          return 0;
-        }
-        let totalCost = 0;
-        product.recipe.forEach(item => {
-          const ing = ingredients.find(i => i.id === item.ingredientId);
-          if (ing) {
-            // Apply standard waste rate multiplier
-            const wasteMultiplier = 1 + ((ing.wasteRate || 0) / 100);
-            totalCost += (item.amount * ing.cost) * wasteMultiplier;
-          }
-        });
-        return totalCost;
-      }
-
-      // Render POS Product Grid (Catalog)
-      function renderPosCatalog() {
-        if (products.length === 0) {
-          posCatalogBody.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                </svg>
-              </div>
-              <h3 class="empty-title">ยังไม่มีสินค้าในระบบ</h3>
-              <p class="empty-desc">เริ่มต้นใช้งานด้วยการเพิ่มรายการสินค้า อัปโหลดรูปภาพ และกำหนดจำนวนวัตถุดิบหลังร้าน</p>
-              <button type="button" class="btn btn-primary" id="empty-add-product-btn">+ เพิ่มสินค้าชิ้นแรก</button>
-            </div>
-          `;
-          const emptyBtn = document.getElementById('empty-add-product-btn');
-          if (emptyBtn) {
-            emptyBtn.addEventListener('click', () => {
-              switchView('stock');
-              prodNameInput.focus();
-            });
-          }
-          return;
-        }
-
-        const filtered = products.filter(p => {
-          const matchCat = selectedCategory === 'ALL' || p.category === selectedCategory;
-          const matchQuery = !posSearchQuery ||
-            p.name.toLowerCase().includes(posSearchQuery) ||
-            (p.sku && p.sku.toLowerCase().includes(posSearchQuery)) ||
-            (p.category && p.category.toLowerCase().includes(posSearchQuery));
-          return matchCat && matchQuery;
-        });
-
-        if (filtered.length === 0) {
-          posCatalogBody.innerHTML = `
-            <div class="empty-state">
-              <h3 class="empty-title">ไม่พบสินค้าที่ค้นหา</h3>
-              <p class="empty-desc">ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่ "ทั้งหมด"</p>
-            </div>
-          `;
-          return;
-        }
-
-        let gridHtml = '<div class="product-grid">';
-        filtered.forEach(p => {
-          const calculatedStock = getCalculatedStock(p);
-          const inCartItem = cart.find(c => c.productId === p.id);
-          const inCartQty = inCartItem ? inCartItem.qty : 0;
-          const remainingToSelect = calculatedStock - inCartQty;
-          const isOut = calculatedStock <= 0 || remainingToSelect <= 0;
-
-          // Check if direct stock is low based on its custom limit
-          let isLow = false;
-          if (p.stockType === 'direct') {
-            isLow = p.stock <= (p.lowStockLimit || 5);
-          } else {
-            // If recipe-based, check if any ingredient in recipe is low based on its custom limit
-            if (p.recipe) {
-              isLow = p.recipe.some(r => {
-                const ing = ingredients.find(i => i.id === r.ingredientId);
-                return ing && ing.stock <= (ing.lowStockLimit || 100);
-              });
-            }
-          }
-
-          let stockLabel = p.stockType === 'recipe' ? `จัดเตรียมได้ ${calculatedStock}` : `คงเหลือ ${calculatedStock}`;
-          let stockClass = '';
-          if (calculatedStock <= 0) {
-            stockLabel = p.stockType === 'recipe' ? 'วัตถุดิบหมด' : 'สินค้าหมด';
-            stockClass = 'out';
-          } else if (isLow) {
-            stockClass = 'low';
-            stockLabel += ' ⚠️';
-          }
-
-          gridHtml += `
-            <button type="button" class="product-card" data-add-id="${p.id}" ${isOut ? 'disabled' : ''}>
-              <div class="product-image-container">
-                ${p.image 
-                  ? `<img class="product-image-img" src="${p.image}" alt="${escapeHtml(p.name)}">`
-                  : `<span class="product-image-placeholder">📦</span>`
-                }
-              </div>
-              <div class="product-info-container">
-                <div>
-                  <div class="product-top">
-                    <span class="product-cat-tag">${escapeHtml(p.category || 'ทั่วไป')}</span>
-                    ${p.sku ? `<span class="product-sku" title="${escapeHtml(p.sku)}">${escapeHtml(p.sku)}</span>` : ''}
-                  </div>
-                  <div class="product-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</div>
-                </div>
-                <div class="product-bottom">
-                  <span class="product-price">${formatCurrency(p.price)}</span>
-                  <span class="stock-text ${stockClass}">${stockLabel}</span>
-                </div>
-              </div>
-            </button>
-          `;
-        });
-        gridHtml += '</div>';
-        posCatalogBody.innerHTML = gridHtml;
-      }
-
-      posCatalogBody.addEventListener('click', (e) => {
-        const card = e.target.closest('[data-add-id]');
-        if (!card || card.disabled) return;
-        const prodId = Number(card.getAttribute('data-add-id'));
-        addToCart(prodId);
-      });
-
-      // Cart Core Functions
-      function addToCart(productId) {
-        const product = products.find(p => p.id === productId);
-        if (!product) return;
-        const calculatedStock = getCalculatedStock(product);
-        if (calculatedStock <= 0) return;
-
-        const existing = cart.find(c => c.productId === productId);
-        if (existing) {
-          if (existing.qty < calculatedStock) {
-            existing.qty += 1;
-          }
-        } else {
-          cart.push({ productId, qty: 1 });
-        }
-        checkoutError.textContent = '';
-        renderPosCatalog();
-        renderCart();
-      }
-
-      // Update basket item qty
-      function updateCartQty(productId, delta) {
-        const itemIndex = cart.findIndex(c => c.productId === productId);
-        if (itemIndex === -1) return;
-
-        const product = products.find(p => p.id === productId);
-        if (!product) {
-          cart.splice(itemIndex, 1);
-        } else {
-          const calculatedStock = getCalculatedStock(product);
-          const newQty = cart[itemIndex].qty + delta;
-          if (newQty <= 0) {
-            cart.splice(itemIndex, 1);
-          } else if (newQty <= calculatedStock) {
-            cart[itemIndex].qty = newQty;
-          }
-        }
-        checkoutError.textContent = '';
-        renderPosCatalog();
-        renderCart();
-      }
-
-      function getCartTotal() {
-        return cart.reduce((sum, item) => {
-          const prod = products.find(p => p.id === item.productId);
-          return prod ? sum + (prod.price * item.qty) : sum;
-        }, 0);
-      }
-
-      // Dynamic toggle for Payment Method Selector
-      paymentMethodSelector.addEventListener('click', (e) => {
-        const tab = e.target.closest('.payment-tab');
-        if (!tab) return;
+        // Add "+ เพิ่มหมวดหมู่ใหม่..." option
+        optionsHtml += `<option value="ADD_NEW_CATEGORY" ${selectedCategoryValue === 'ADD_NEW_CATEGORY' ? 'selected' : ''}>+ เพิ่มหมวดหมู่ใหม่...</option>`;
         
-        document.querySelectorAll('#payment-method-selector .payment-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        
-        currentPaymentMethod = tab.getAttribute('data-method');
-        checkoutError.textContent = '';
-        
-        if (currentPaymentMethod === 'qr') {
-          paymentQrContainer.style.display = 'block';
-          paymentCashContainer.style.display = 'none';
-          
-          // Render shop QR
-          const total = getCartTotal();
-          qrTextHeader.textContent = `ยอดโอนสแกนจ่าย: ${formatCurrency(total)}`;
-          if (shopConfig.qrCode) {
-            qrImageWrapper.innerHTML = `<img src="${shopConfig.qrCode}" class="qr-img" alt="Shop QR Code">`;
-          } else {
-            // Simulated PromptPay-style beautiful mockup
-            qrImageWrapper.innerHTML = `
-              <div style="background: #003666; border-radius: 8px; padding: 12px; max-width: 160px; margin: 0 auto; color: white;">
-                <div style="font-weight: 700; font-size: 11px; margin-bottom: 4px; letter-spacing: 0.5px;">PROMPTPAY QR</div>
-                <div style="background: white; padding: 6px; border-radius: 4px;">
-                  <img src="about:invalid#zPythonSafez" style="width: 100%; display: block;" alt="Mockup QR">
-                </div>
-                <div style="font-size: 9px; margin-top: 6px; opacity: 0.85;">(คิวอาร์จำลองอัตโนมัติ)</div>
-              </div>
-              <p style="font-size: 10px; color: var(--danger); font-weight: 600; margin-top: 6px; margin-bottom: 0;">* อัปโหลดรูป QR รับเงินของร้านคุณได้ในเมนูตั้งค่า</p>
-            `;
-          }
+        prodCategorySelect.innerHTML = optionsHtml;
+        handleCategoryDropdownChange();
+      }
+
+      function handleCategoryDropdownChange() {
+        if (prodCategorySelect.value === 'ADD_NEW_CATEGORY') {
+          prodCategoryNewContainer.style.display = 'block';
+          prodCategoryNewInput.focus();
         } else {
-          paymentQrContainer.style.display = 'none';
-          paymentCashContainer.style.display = 'grid';
-          cashReceivedInput.focus();
-        }
-      });
-
-      // Delivery channel selector
-      deliveryChannelSelector.addEventListener('click', (e) => {
-        const tab = e.target.closest('.delivery-tab');
-        if (!tab) return;
-        
-        document.querySelectorAll('#delivery-channel-selector .delivery-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        
-        currentSalesChannel = tab.getAttribute('data-channel');
-      });
-
-      // Simulated Delivery Order triggers
-      function displayIncomingDelivery(channel, itemsList, details) {
-        pendingDeliveryOrder = {
-          channel: channel,
-          items: itemsList // Array of { productId, qty }
-        };
-
-        incomingDeliveryTitle.innerHTML = `ออเดอร์ใหม่เข้าจาก <strong>${channel.toUpperCase()}</strong>!`;
-        
-        // Build description text
-        const textNames = itemsList.map(item => {
-          const prod = products.find(p => p.id === item.productId);
-          return prod ? `${prod.name} x${item.qty}` : 'สินค้าไร้ชื่อ';
-        }).join(', ');
-
-        incomingDeliveryItems.textContent = textNames;
-
-        if (channel === 'grab') {
-          incomingDeliveryIcon.textContent = '🟢';
-          deliveryAlertBar.style.borderColors = 'var(--brand)';
-        } else {
-          incomingDeliveryIcon.textContent = '🟠';
-          deliveryAlertBar.style.borderColors = 'var(--warning)';
-        }
-
-        deliveryAlertBar.style.display = 'flex';
-        // Auto scroll to top of page to notice the delivery
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-
-      btnSimGrab.addEventListener('click', () => {
-        if (products.length === 0) {
-          alert('กรุณาเพิ่มรายการสินค้าก่อนสุ่มออเดอร์นะคะ!');
-          return;
-        }
-        // Choose random product
-        const randProduct = products[Math.floor(Math.random() * products.length)];
-        displayIncomingDelivery('grab', [{ productId: randProduct.id, qty: 1 }], {});
-      });
-
-      btnSimShopee.addEventListener('click', () => {
-        if (products.length === 0) {
-          alert('กรุณาเพิ่มรายการสินค้าก่อนสุ่มออเดอร์นะคะ!');
-          return;
-        }
-        // Choose random product
-        const randProduct = products[Math.floor(Math.random() * products.length)];
-        displayIncomingDelivery('shopee', [{ productId: randProduct.id, qty: 1 }], {});
-      });
-
-      // Accept or decline delivery
-      btnAcceptDelivery.addEventListener('click', () => {
-        if (!pendingDeliveryOrder) return;
-        
-        // Set channel in the selector
-        document.querySelectorAll('#delivery-channel-selector .delivery-tab').forEach(t => {
-          t.classList.remove('active');
-          if (t.getAttribute('data-channel') === pendingDeliveryOrder.channel) {
-            t.classList.add('active');
-          }
-        });
-        currentSalesChannel = pendingDeliveryOrder.channel;
-
-        // Force payment method to QR (typical for delivery apps)
-        document.querySelectorAll('#payment-method-selector .payment-tab').forEach(t => {
-          t.classList.remove('active');
-          if (t.getAttribute('data-method') === 'qr') {
-            t.classList.add('active');
-          }
-        });
-        currentPaymentMethod = 'qr';
-
-        // Add item to cart
-        cart = []; // clear currentWalkin cart for delivery single checkout
-        pendingDeliveryOrder.items.forEach(item => {
-          addToCart(item.productId);
-          const cartItem = cart.find(c => c.productId === item.productId);
-          if (cartItem) cartItem.qty = item.qty;
-        });
-
-        // Hide notice
-        deliveryAlertBar.style.display = 'none';
-        pendingDeliveryOrder = null;
-
-        renderCart();
-        renderPosCatalog();
-
-        // Trigger payment layout updates
-        const total = getCartTotal();
-        paymentQrContainer.style.display = 'block';
-        paymentCashContainer.style.display = 'none';
-        qrTextHeader.textContent = `ยอดสแกนจ่ายเดลิเวอรี่: ${formatCurrency(total)}`;
-      });
-
-      btnRejectDelivery.addEventListener('click', () => {
-        deliveryAlertBar.style.display = 'none';
-        pendingDeliveryOrder = null;
-      });
-
-      function renderCart() {
-        // Clean up cart defensively
-        cart = cart.filter(item => {
-          const prod = products.find(p => p.id === item.productId);
-          if (!prod) return false;
-          const calculatedStock = getCalculatedStock(prod);
-          if (calculatedStock <= 0) return false;
-          if (item.qty > calculatedStock) item.qty = calculatedStock;
-          return true;
-        });
-
-        if (cart.length === 0) {
-          cartItemsContainer.innerHTML = `
-            <div class="empty-state" style="padding: 36px 12px;">
-              <p class="empty-title" style="font-size: 14px;">ยังไม่มีสินค้าในรายการขาย</p>
-              <p class="empty-desc" style="margin-bottom: 0;">คลิกเลือกสินค้าจากฝั่งซ้ายเพื่อนำเข้าสู่รายการคิดเงิน</p>
-            </div>
-          `;
-          clearCartBtn.disabled = true;
-          checkoutBtn.disabled = true;
-          cartTotalAmount.textContent = formatCurrency(0);
-          updateChangeCalculation();
-          return;
-        }
-
-        clearCartBtn.disabled = false;
-        checkoutBtn.disabled = false;
-
-        let html = '';
-        cart.forEach(item => {
-          const prod = products.find(p => p.id === item.productId);
-          if (!prod) return;
-          const subtotal = prod.price * item.qty;
-          const calculatedStock = getCalculatedStock(prod);
-          const maxReached = item.qty >= calculatedStock;
-
-          html += `
-            <div class="cart-item">
-              <div class="cart-item-thumbnail">
-                ${prod.image 
-                  ? `<img src="${prod.image}" alt="${escapeHtml(prod.name)}">`
-                  : `📦`
-                }
-              </div>
-              <div class="cart-item-info">
-                <p class="cart-item-name">${escapeHtml(prod.name)}</p>
-                <span class="cart-item-meta">${formatCurrency(prod.price)} / ชิ้น</span>
-              </div>
-              <div class="qty-controls">
-                <button type="button" class="qty-btn" data-qty-id="${prod.id}" data-delta="-1" aria-label="ลดจำนวน">-</button>
-                <span class="qty-value">${item.qty}</span>
-                <button type="button" class="qty-btn" data-qty-id="${prod.id}" data-delta="1" ${maxReached ? 'disabled' : ''} aria-label="เพิ่มจำนวน">+</button>
-              </div>
-              <div class="cart-item-subtotal">${formatCurrency(subtotal)}</div>
-            </div>
-          `;
-        });
-
-        cartItemsContainer.innerHTML = html;
-        cartTotalAmount.textContent = formatCurrency(getCartTotal());
-        updateChangeCalculation();
-      }
-
-      cartItemsContainer.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-qty-id]');
-        if (!btn || btn.disabled) return;
-        const id = Number(btn.getAttribute('data-qty-id'));
-        const delta = Number(btn.getAttribute('data-delta'));
-        updateCartQty(id, delta);
-      });
-
-      clearCartBtn.addEventListener('click', () => {
-        cart = [];
-        cashReceivedInput.value = '';
-        checkoutError.textContent = '';
-        renderPosCatalog();
-        renderCart();
-      });
-
-      function updateChangeCalculation() {
-        const total = getCartTotal();
-        const rawCash = cashReceivedInput.value.trim();
-        if (!rawCash || total === 0) {
-          changeAmountDisplay.textContent = formatCurrency(0);
-          return;
-        }
-        const cash = Number(rawCash);
-        if (isNaN(cash) || cash < total) {
-          changeAmountDisplay.textContent = formatCurrency(0);
-        } else {
-          changeAmountDisplay.textContent = formatCurrency(cash - total);
+          prodCategoryNewContainer.style.display = 'none';
+          prodCategoryNewInput.value = '';
         }
       }
 
-      cashReceivedInput.addEventListener('input', () => {
-        checkoutError.textContent = '';
-        updateChangeCalculation();
-      });
-
-      // Checkout Processing (Deducting Product stock OR Raw Ingredients stock dynamically and sending order to Kitchen)
-      checkoutBtn.addEventListener('click', () => {
-        if (cart.length === 0) return;
-
-        const total = getCartTotal();
-        let cash = total; // Default is QR/exact payment
-
-        if (currentPaymentMethod === 'cash') {
-          const rawCash = cashReceivedInput.value.trim();
-          cash = rawCash === '' ? total : Number(rawCash);
-
-          if (isNaN(cash) || cash < total) {
-            checkoutError.textContent = 'จำนวนเงินสดที่รับน้อยกว่ายอดสุทธิ';
-            cashReceivedInput.focus();
-            return;
-          }
-        }
-
-        const change = cash - total;
-        const soldLines = [];
-        let totalEstimatedCost = 0;
-
-        // Process deduction & record transaction details
-        cart.forEach(item => {
-          const prod = products.find(p => p.id === item.productId);
-          if (prod) {
-            const unitCost = getProductRecipeCost(prod);
-            const lineCost = unitCost * item.qty;
-            totalEstimatedCost += lineCost;
-
-            if (prod.stockType === 'direct') {
-              // Deduct direct product stock
-              prod.stock = Math.max(0, prod.stock - item.qty);
-            } else if (prod.stockType === 'recipe' && prod.recipe) {
-              // Deduct ingredients raw stock based on formulation recipe
-              prod.recipe.forEach(recipeItem => {
-                const ing = ingredients.find(i => i.id === recipeItem.ingredientId);
-                if (ing) {
-                  const totalUsed = recipeItem.amount * item.qty;
-                  ing.stock = Math.max(0, ing.stock - totalUsed);
-                }
-              });
-            }
-
-            soldLines.push({
-              productId: prod.id,
-              name: prod.name,
-              qty: item.qty,
-              price: prod.price,
-              cost: unitCost,
-              subtotal: prod.price * item.qty
-            });
-          }
-        });
-
-        // 1. Record Sale History
-        const orderId = Date.now();
-        const orderNo = "ORD-" + (salesHistory.length + 1001);
-        salesHistory.push({
-          id: orderId,
-          orderNo: orderNo,
-          total: total,
-          totalCost: totalEstimatedCost,
-          items: soldLines,
-          datetime: new Date().toISOString(),
-          channel: currentSalesChannel,
-          payment: currentPaymentMethod
-        });
-
-        // 2. Add queue to Kitchen Screen!
-        kitchenOrders.push({
-          id: orderId,
-          orderNo: orderNo,
-          items: soldLines.map(line => ({ name: line.name, qty: line.qty, done: false })),
-          datetime: new Date().toISOString(),
-          channel: currentSalesChannel,
-          status: 'pending'
-        });
-
-        // Update Receipt Modal shop profile
-        receiptShopName.textContent = shopConfig.name;
-        if (shopConfig.logo) {
-          receiptLogoWrap.innerHTML = `<img src="${shopConfig.logo}" alt="Store Logo">`;
-          receiptLogoWrap.style.background = 'transparent';
-        } else {
-          receiptLogoWrap.innerHTML = `🏪`;
-          receiptLogoWrap.style.background = 'var(--surface-subtle)';
-        }
-
-        const now = new Date();
-        receiptDatetime.textContent = now.toLocaleString('th-TH', {
-          dateStyle: 'medium',
-          timeStyle: 'short'
-        });
-
-        receiptItemsList.innerHTML = soldLines.map(line => `
-          <div class="receipt-line">
-            <span>${escapeHtml(line.name)} x ${line.qty}</span>
-            <span>${formatCurrency(line.subtotal)}</span>
-          </div>
-        `).join('');
-
-        // Map delivery channels into Thai words
-        const channelsMap = {
-          'walkin': 'หน้าร้าน (Walk-in)',
-          'grab': 'GrabFood (เดลิเวอรี่)',
-          'shopee': 'ShopeeFood (เดลิเวอรี่)',
-          'lineman': 'LINE MAN (เดลิเวอรี่)'
-        };
-
-        const paymentMethodLabel = currentPaymentMethod === 'cash' ? 'เงินสด' : 'QR โอนเงิน';
-        const salesChannelLabel = channelsMap[currentSalesChannel] || 'หน้าร้าน';
-
-        receiptTotalsBox.innerHTML = `
-          <div class="receipt-line" style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">
-            <span>คิวสั่งซื้อ:</span>
-            <strong>${orderNo}</strong>
-          </div>
-          <div class="receipt-line" style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">
-            <span>ช่องทางขาย:</span>
-            <strong>${salesChannelLabel}</strong>
-          </div>
-          <div class="receipt-line" style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">
-            <span>วิธีชำระเงิน:</span>
-            <strong>${paymentMethodLabel}</strong>
-          </div>
-          <div class="receipt-line grand" style="border-top: 1px dashed var(--border-strong); padding-top: var(--space-2);">
-            <span>ยอดรวมสุทธิ</span>
-            <span>${formatCurrency(total)}</span>
-          </div>
-          <div class="receipt-line">
-            <span>${currentPaymentMethod === 'cash' ? 'รับเงินสด' : 'ชำระผ่าน QR'}</span>
-            <span>${formatCurrency(cash)}</span>
-          </div>
-          <div class="receipt-line">
-            <span>เงินทอน</span>
-            <span>${formatCurrency(change)}</span>
-          </div>
-        `;
-
-        receiptModal.classList.add('open');
-
-        // Reset cart, cash values and channel selector back to walkin
-        cart = [];
-        cashReceivedInput.value = '';
-        checkoutError.textContent = '';
-        
-        currentSalesChannel = 'walkin';
-        document.querySelectorAll('#delivery-channel-selector .delivery-tab').forEach(t => {
-          t.classList.remove('active');
-          if (t.getAttribute('data-channel') === 'walkin') t.classList.add('active');
-        });
-
-        saveState(); // Save state to storage
-        renderAll();
-      });
-
-      closeReceiptBtn.addEventListener('click', () => {
-        receiptModal.classList.remove('open');
-      });
-
-      receiptModal.addEventListener('click', (e) => {
-        if (e.target === receiptModal) {
-          receiptModal.classList.remove('open');
-        }
-      });
-
-      // Kitchen Screen Render
-      function renderKitchenQueue() {
-        const activeTickets = kitchenOrders.filter(o => o.status === 'pending');
-        kitchenCountText.textContent = `คิวค้างส่ง: ${activeTickets.length} ออเดอร์`;
-
-        if (activeTickets.length === 0) {
-          kitchenOrdersContainer.innerHTML = `
-            <div class="card" style="grid-column: 1 / -1; padding: var(--space-8); text-align:center; color: var(--muted);">
-              <span style="font-size: 48px; display:block; margin-bottom: 12px;">🍳</span>
-              <strong>ยังไม่มีออเดอร์ในคิวห้องครัวขณะนี้</strong>
-              <p style="font-size: 13px; margin: 6px 0 0 0;">ออเดอร์จากการกดคิดเงินที่หน้าร้าน POS จะเด้งเข้ามาเตรียมอาหารที่นี่อัตโนมัติ</p>
-            </div>
-          `;
-          return;
-        }
-
-        const channelBadges = {
-          'walkin': '<span class="product-cat-tag">🏪 หน้าร้าน</span>',
-          'grab': '<span class="product-cat-tag" style="background:#e6fcf5; color:#0ca678;">🟢 Grab</span>',
-          'shopee': '<span class="product-cat-tag" style="background:#fff4e6; color:#f76707;">🟠 Shopee</span>',
-          'lineman': '<span class="product-cat-tag" style="background:#e6fcf5; color:#0ca678;">🟢 Lineman</span>'
-        };
-
-        let html = '';
-        activeTickets.forEach(ticket => {
-          // Check if ticket is older than 5 minutes for urgent highlight
-          const elapsedMs = Date.now() - new Date(ticket.datetime).getTime();
-          const elapsedMins = Math.floor(elapsedMs / 1000 / 60);
-          const isUrgent = elapsedMins >= 5;
-
-          let itemsHtml = '';
-          ticket.items.forEach((item, index) => {
-            itemsHtml += `
-              <div class="kitchen-ticket-item">
-                <label style="display:flex; align-items:center; gap: 8px; cursor:pointer; width:100%;">
-                  <input type="checkbox" style="width:16px; height:16px; accent-color: var(--brand);" 
-                    ${item.done ? 'checked' : ''} data-ticket-id="${ticket.id}" data-item-index="${index}" class="kitchen-item-checkbox">
-                  <span style="${item.done ? 'text-decoration: line-through; color: var(--muted);' : 'font-weight:700;'}">
-                    ${item.qty} x ${escapeHtml(item.name)}
-                  </span>
-                </label>
-              </div>
-            `;
-          });
-
-          html += `
-            <div class="kitchen-ticket" id="ticket-${ticket.id}">
-              <div class="kitchen-ticket-header ${isUrgent ? 'urgent' : ''}">
-                <div>
-                  <strong style="font-size:16px; color: var(--brand);">${ticket.orderNo}</strong>
-                  <div style="font-size:11px; color: var(--muted); margin-top:2px;">ผ่านไป: ${elapsedMins} นาที</div>
-                </div>
-                ${channelBadges[ticket.channel] || ''}
-              </div>
-              <div class="kitchen-ticket-body">
-                ${itemsHtml}
-              </div>
-              <div class="kitchen-ticket-footer">
-                <button type="button" class="btn btn-primary btn-sm" style="width:100%;" data-complete-ticket="${ticket.id}">
-                  ✔ จัดส่ง/ทำเสร็จคิวนี้
-                </button>
-              </div>
-            </div>
-          `;
-        });
-        kitchenOrdersContainer.innerHTML = html;
-      }
-
-      // Handle Kitchen Order Ticket checkboxes & completion
-      kitchenOrdersContainer.addEventListener('click', (e) => {
-        // 1. Toggle specific item check
-        if (e.target.classList.contains('kitchen-item-checkbox')) {
-          const ticketId = Number(e.target.getAttribute('data-ticket-id'));
-          const itemIdx = Number(e.target.getAttribute('data-item-index'));
-          const ticket = kitchenOrders.find(o => o.id === ticketId);
-          if (ticket && ticket.items[itemIdx]) {
-            ticket.items[itemIdx].done = e.target.checked;
-            renderKitchenQueue();
-          }
-          return;
-        }
-
-        // 2. Mark entire ticket as completed
-        const completeBtn = e.target.closest('[data-complete-ticket]');
-        if (completeBtn) {
-          const ticketId = Number(completeBtn.getAttribute('data-complete-ticket'));
-          const ticket = kitchenOrders.find(o => o.id === ticketId);
-          if (ticket) {
-            ticket.status = 'completed';
-            renderKitchenQueue();
-          }
-        }
-      });
-
-      // Spoilage waste reporting
-      function openWasteModal(ingredientId) {
-        const ing = ingredients.find(i => i.id === ingredientId);
-        if (!ing) return;
-
-        wasteIngId.value = String(ing.id);
-        wasteIngNameLabel.textContent = `วัตถุดิบ: ${ing.name}`;
-        wasteUnitLabel.textContent = ing.unit;
-        wasteQtyInput.value = '';
-        wasteModalError.textContent = '';
-        wasteSpoilageModal.classList.add('open');
-        wasteQtyInput.focus();
-      }
-
-      btnCloseWaste.addEventListener('click', () => {
-        wasteSpoilageModal.classList.remove('open');
-      });
-
-      btnConfirmWaste.addEventListener('click', () => {
-        const id = Number(wasteIngId.value);
-        const qtyVal = wasteQtyInput.value.trim();
-        const ing = ingredients.find(i => i.id === id);
-
-        if (!ing) return;
-
-        const qty = Number(qtyVal);
-        if (qtyVal === '' || isNaN(qty) || qty <= 0) {
-          wasteModalError.textContent = 'กรุณาระบุจำนวนที่คัดทิ้งเสียหายให้ถูกต้อง (มากกว่า 0)';
-          wasteQtyInput.focus();
-          return;
-        }
-
-        if (qty > ing.stock) {
-          wasteModalError.textContent = `จำนวนที่ต้องการคัดทิ้ง (${qty}) มากกว่าจำนวนสต็อกปัจจุบัน (${ing.stock})`;
-          wasteQtyInput.focus();
-          return;
-        }
-
-        // Apply waste reduction
-        ing.stock = Math.max(0, ing.stock - qty);
-        ing.totalWasted = (ing.totalWasted || 0) + qty;
-
-        // Log to waste history
-        const wasteCost = qty * ing.cost;
-        wasteHistory.push({
-          ingredientId: ing.id,
-          name: ing.name,
-          qty: qty,
-          cost: wasteCost,
-          datetime: new Date().toISOString()
-        });
-
-        wasteSpoilageModal.classList.remove('open');
-        saveState();
-        renderAll();
-      });
-
-      // Analytical Reports Panel Render
-      function renderReports() {
-        // Calculate Totals
-        let totalRevenue = 0;
-        let totalCogs = 0;
-        salesHistory.forEach(sale => {
-          totalRevenue += sale.total;
-          totalCogs += sale.totalCost;
-        });
-
-        let totalWasteCostVal = 0;
-        wasteHistory.forEach(waste => {
-          totalWasteCostVal += waste.cost;
-        });
-
-        const grossProfit = totalRevenue - totalCogs - totalWasteCostVal;
-
-        // Render Cards
-        repRevenue.textContent = formatCurrency(totalRevenue);
-        repCogs.textContent = formatCurrency(totalCogs);
-        repWasteCost.textContent = formatCurrency(totalWasteCostVal);
-        repProfit.textContent = formatCurrency(grossProfit);
-
-        // Render Spoilage percentages table
-        if (ingredients.length === 0) {
-          wasteReportTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--muted); padding: 16px;">ยังไม่มีข้อมูลคลังวัตถุดิบ</td></tr>`;
-        } else {
-          let html = '';
-          ingredients.forEach(ing => {
-            const wastedAmount = ing.totalWasted || 0;
-            const wasteCostAmount = wastedAmount * ing.cost;
-            const totalSupplied = ing.stock + wastedAmount; // rough approximation
-            const wastePercentage = totalSupplied > 0 ? (wastedAmount / totalSupplied) * 100 : 0;
-
-            html += `
-              <tr>
-                <td><strong>${escapeHtml(ing.name)}</strong></td>
-                <td class="num">${formatCurrency(ing.cost)} / ${escapeHtml(ing.unit)}</td>
-                <td class="num">${ing.stock.toLocaleString('th-TH')} ${escapeHtml(ing.unit)}</td>
-                <td class="num" style="color: var(--danger); font-weight:700;">${wastedAmount.toLocaleString('th-TH')} ${escapeHtml(ing.unit)}</td>
-                <td class="num" style="color: var(--danger);">${formatCurrency(wasteCostAmount)}</td>
-                <td class="num">
-                  <span class="stock-text out" style="font-weight: 700; font-size: 13px;">${wastePercentage.toFixed(1)}%</span>
-                </td>
-              </tr>
-            `;
-          });
-          wasteReportTableBody.innerHTML = html;
-        }
-
-        // Render menu cost margins table
-        if (products.length === 0) {
-          menuCogsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--muted); padding: 16px;">ยังไม่มีข้อมูลเมนูสินค้า</td></tr>`;
-        } else {
-          let html = '';
-          products.forEach(p => {
-            const cogs = getProductRecipeCost(p);
-            const price = p.price;
-            const profit = price - cogs;
-            const marginPercentage = price > 0 ? (profit / price) * 100 : 0;
-
-            let marginColor = 'var(--success)';
-            if (marginPercentage < 40) marginColor = 'var(--danger)';
-            else if (marginPercentage < 60) marginColor = 'var(--warning)';
-
-            html += `
-              <tr>
-                <td><strong>${escapeHtml(p.name)}</strong></td>
-                <td class="num" style="font-weight:700; color: var(--brand);">${formatCurrency(price)}</td>
-                <td class="num">${formatCurrency(cogs)}</td>
-                <td class="num" style="color: var(--success); font-weight:700;">${formatCurrency(profit)}</td>
-                <td class="num" style="color: ${marginColor}; font-weight:700;">${marginPercentage.toFixed(1)}%</td>
-              </tr>
-            `;
-          });
-          menuCogsTableBody.innerHTML = html;
-        }
-      }
-
-      // Dynamic builder for Recipe Formulation list inside product form
-      function renderRecipeIngredientsSelection(existingRecipe = []) {
-        if (ingredients.length === 0) {
-          recipeIngredientsList.innerHTML = `
-            <div style="font-size:12px; color:var(--muted); text-align:center; padding:12px;">
-              ยังไม่มีข้อมูลในคลังวัตถุดิบ กรุณาเพิ่มวัตถุดิบในแถบ "จัดการคลังวัตถุดิบหลังร้าน" ก่อนสร้างสูตรผลิต
-            </div>
-          `;
-          return;
-        }
-
-        let html = '';
-        ingredients.forEach(ing => {
-          // Check if this ingredient is currently in the recipe
-          const recItem = existingRecipe.find(r => r.ingredientId === ing.id);
-          const checked = recItem ? 'checked' : '';
-          const amountValue = recItem ? recItem.amount : '';
-
-          html += `
-            <div class="recipe-ingredient-row">
-              <label style="display: flex; align-items: center; gap: 6px; font-size:13px; flex: 1; min-width: 140px; cursor: pointer;">
-                <input type="checkbox" class="recipe-checkbox" data-ing-id="${ing.id}" ${checked}>
-                <span style="font-weight: 500;">${escapeHtml(ing.name)}</span>
-              </label>
-              <div style="display: flex; align-items: center; gap: 4px; width: 130px;">
-                <input type="number" class="input recipe-amount-input" style="padding: 4px 8px; font-size:12px; height:28px;" 
-                  placeholder="ปริมาณใช้" min="0.01" step="any" value="${amountValue}" data-ing-id="${ing.id}">
-                <span style="font-size:12px; color:var(--muted); white-space:nowrap; width:45px;">${escapeHtml(ing.unit)}</span>
-              </div>
-            </div>
-          `;
-        });
-        recipeIngredientsList.innerHTML = html;
-      }
-
-      // Back-office Products Management
-      function resetStockForm() {
-        editProductIdInput.value = '';
-        prodNameInput.value = '';
-        prodSkuInput.value = '';
-        prodCategoryInput.value = '';
-        prodPriceInput.value = '';
-        prodStockType.value = 'direct';
-        directStockGroup.style.display = 'block';
-        recipeIngredientsGroup.style.display = 'none';
-        prodStockInput.value = '';
-        prodDirectCostInput.value = '';
-        prodLowLimit.value = '5';
-        prodImageFileInput.value = '';
-        prodImageDataInput.value = '';
-        prodImagePreview.src = '';
-        prodImagePreview.style.display = 'none';
-        btnRemoveProdImage.style.display = 'none';
-        stockFormError.textContent = '';
-        stockFormTitle.textContent = 'เพิ่มสินค้าเข้าสต็อก';
-        saveProductBtn.textContent = 'บันทึกสินค้า';
-        cancelEditBtn.style.display = 'none';
-      }
-
-      cancelEditBtn.addEventListener('click', resetStockForm);
-
-      stockForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = prodNameInput.value.trim();
-        const sku = prodSkuInput.value.trim();
-        const category = prodCategoryInput.value.trim() || 'ทั่วไป';
-        const priceVal = prodPriceInput.value.trim();
-        const stockType = prodStockType.value;
-        const imageData = prodImageDataInput.value;
-        const lowLimitVal = prodLowLimit.value.trim();
-
-        if (!name) {
-          stockFormError.textContent = 'กรุณาระบุชื่อสินค้า';
-          prodNameInput.focus();
-          return;
-        }
-
-        const price = Number(priceVal);
-        if (priceVal === '' || isNaN(price) || price < 0) {
-          stockFormError.textContent = 'กรุณาระบุราคาขายที่ถูกต้อง (0 ขึ้นไป)';
-          prodPriceInput.focus();
-          return;
-        }
-
-        const customLowLimit = Number(lowLimitVal);
-        if (lowLimitVal === '' || isNaN(customLowLimit) || customLowLimit < 0) {
-          stockFormError.textContent = 'กรุณาระบุเกณฑ์แจ้งเตือนสต็อกเหลือน้อยให้ถูกต้อง';
-          prodLowLimit.focus();
-          return;
-        }
-
-        let stock = 0;
-        let directCost = 0;
-        let finalRecipe = [];
-
-        if (stockType === 'direct') {
-          const stockVal = prodStockInput.value.trim();
-          stock = Number(stockVal);
-          if (stockVal === '' || isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
-            stockFormError.textContent = 'กรุณาระบุจำนวนสต็อกเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป';
-            prodStockInput.focus();
-            return;
-          }
-
-          const costVal = prodDirectCostInput.value.trim();
-          directCost = Number(costVal);
-          if (costVal === '' || isNaN(directCost) || directCost < 0) {
-            stockFormError.textContent = 'กรุณาระบุต้นทุนที่ถูกต้อง (0 ขึ้นไป)';
-            prodDirectCostInput.focus();
-            return;
-          }
-        } else {
-          // If recipe-based formulation
-          const rows = recipeIngredientsList.querySelectorAll('.recipe-ingredient-row');
-          let validationOk = true;
-
-          rows.forEach(row => {
-            const checkbox = row.querySelector('.recipe-checkbox');
-            const amountInput = row.querySelector('.recipe-amount-input');
-            const ingId = Number(checkbox.getAttribute('data-ing-id'));
-
-            if (checkbox.checked) {
-              const amount = Number(amountInput.value);
-              if (isNaN(amount) || amount <= 0) {
-                validationOk = false;
-                amountInput.focus();
-              } else {
-                finalRecipe.push({
-                  ingredientId: ingId,
-                  amount: amount
-                });
-              }
-            }
-          });
-
-          if (!validationOk) {
-            stockFormError.textContent = 'กรุณาระบุปริมาณการใช้วัตถุดิบให้ถูกต้องสำหรับตัวเลือกที่ติ๊กถูก';
-            return;
-          }
-
-          if (finalRecipe.length === 0) {
-            stockFormError.textContent = 'สำหรับประเภทอาหาร/เครื่องดื่ม คุณต้องติ๊กเลือกวัตถุดิบในสูตรผลิตอย่างน้อย 1 ชนิด';
-            return;
-          }
-        }
-
-        const editingId = editProductIdInput.value ? Number(editProductIdInput.value) : null;
-
-        if (editingId) {
-          const existing = products.find(p => p.id === editingId);
-          if (existing) {
-            existing.name = name;
-            existing.sku = sku;
-            existing.category = category;
-            existing.price = price;
-            existing.stockType = stockType;
-            existing.stock = stockType === 'direct' ? stock : 0;
-            existing.directCost = stockType === 'direct' ? directCost : 0;
-            existing.lowStockLimit = customLowLimit;
-            existing.recipe = stockType === 'recipe' ? finalRecipe : [];
-            existing.image = imageData;
-          }
-        } else {
-          products.push({
-            id: nextId++,
-            name,
-            sku,
-            category,
-            price,
-            stockType,
-            stock: stockType === 'direct' ? stock : 0,
-            directCost: stockType === 'direct' ? directCost : 0,
-            lowStockLimit: customLowLimit,
-            recipe: stockType === 'recipe' ? finalRecipe : [],
-            image: imageData
-          });
-        }
-
-        resetStockForm();
-        saveState();
-        renderAll();
-      });
-
-      function renderStockTable() {
-        if (products.length === 0) {
-          stockTableContainer.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-              </div>
-              <h3 class="empty-title">คลังสินค้าว่างเปล่า</h3>
-              <p class="empty-desc">กรอกข้อมูลสินค้าและเลือกใส่ภาพประกอบในแบบฟอร์มด้านซ้ายเพื่อเพิ่มสินค้าเข้าสู่ระบบสต็อก</p>
-            </div>
-          `;
-          return;
-        }
-
-        const filtered = products.filter(p => {
-          if (!stockSearchQuery) return true;
-          return p.name.toLowerCase().includes(stockSearchQuery) ||
-            (p.sku && p.sku.toLowerCase().includes(stockSearchQuery)) ||
-            (p.category && p.category.toLowerCase().includes(stockSearchQuery));
-        });
-
-        if (filtered.length === 0) {
-          stockTableContainer.innerHTML = `
-            <div class="empty-state">
-              <h3 class="empty-title">ไม่พบรายการสินค้าที่ตรงกับคำค้นหา</h3>
-            </div>
-          `;
-          return;
-        }
-
-        let html = `
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>ภาพ</th>
-                  <th>รหัส SKU</th>
-                  <th>ชื่อสินค้า / สูตรการจัดสรรคลัง</th>
-                  <th>หมวดหมู่</th>
-                  <th class="num">ราคาขาย</th>
-                  <th class="num">ต้นทุนเฉลี่ย</th>
-                  <th class="num">สต็อกพร้อมขาย</th>
-                  <th>จัดการ</th>
-                </tr>
-              </thead>
-              <tbody>
-        `;
-
-        filtered.forEach(p => {
-          const calculatedStock = getCalculatedStock(p);
-          const calculatedCost = getProductRecipeCost(p);
-          let stockClass = '';
-          
-          // Check if custom low stock threshold is reached
-          let isLow = false;
-          if (p.stockType === 'direct') {
-            isLow = p.stock <= (p.lowStockLimit || 5);
-          } else {
-            if (p.recipe) {
-              isLow = p.recipe.some(r => {
-                const ing = ingredients.find(i => i.id === r.ingredientId);
-                return ing && ing.stock <= (ing.lowStockLimit || 100);
-              });
-            }
-          }
-
-          if (calculatedStock === 0) stockClass = 'out';
-          else if (isLow) stockClass = 'low';
-
-          // Build recipes tag view
-          let typeLabelHtml = '';
-          if (p.stockType === 'recipe' && p.recipe) {
-            typeLabelHtml = `<div style="margin-top: 4px;">`;
-            p.recipe.forEach(r => {
-              const ing = ingredients.find(i => i.id === r.ingredientId);
-              const ingName = ing ? ing.name : 'วัตถุดิบที่ถูกลบ';
-              typeLabelHtml += `<span class="recipe-tag">${escapeHtml(ingName)} ${r.amount}</span>`;
-            });
-            typeLabelHtml += `</div>`;
-          } else {
-            typeLabelHtml = `<div style="font-size:11px; color:var(--muted); margin-top:2px;">หักจากสต็อกสินค้าโดยตรง (เกณฑ์เตือน: ${p.lowStockLimit || 5})</div>`;
-          }
-
-          html += `
-            <tr>
-              <td>
-                <div class="table-thumbnail">
-                  ${p.image 
-                    ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">`
-                    : `<span style="font-size: 16px;">📦</span>`
-                  }
-                </div>
-              </td>
-              <td><span class="product-sku">${escapeHtml(p.sku || '-')}</span></td>
-              <td>
-                <strong>${escapeHtml(p.name)}</strong>
-                ${typeLabelHtml}
-              </td>
-              <td><span class="product-cat-tag">${escapeHtml(p.category || 'ทั่วไป')}</span></td>
-              <td class="num">${formatCurrency(p.price)}</td>
-              <td class="num" style="color: var(--muted);">${formatCurrency(calculatedCost)}</td>
-              <td class="num">
-                ${p.stockType === 'direct' ? `
-                  <div class="stock-adjust-group">
-                    <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-stock-adj="${p.id}" data-delta="-1" ${p.stock <= 0 ? 'disabled' : ''} title="ลดสต็อก 1 ชิ้น">-</button>
-                    <span class="stock-text ${stockClass}" style="min-width: 42px; text-align:center; font-size:14px;">${p.stock}</span>
-                    <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-stock-adj="${p.id}" data-delta="1" title="เพิ่มสต็อก 1 ชิ้น">+</button>
-                  </div>
-                ` : `
-                  <span class="stock-text ${stockClass}" style="font-size:14px; font-weight:700;">จัดเตรียมได้ ${calculatedStock}</span>
-                `}
-              </td>
-              <td class="num">
-                <div class="row-actions">
-                  <button type="button" class="btn btn-secondary btn-sm" data-edit-id="${p.id}">แก้ไข</button>
-                  <button type="button" class="btn btn-danger-ghost" data-delete-id="${p.id}">ลบ</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        });
-
-        html += `
-              </tbody>
-            </table>
-          </div>
-        `;
-        stockTableContainer.innerHTML = html;
-      }
-
-      stockTableContainer.addEventListener('click', (e) => {
-        const adjBtn = e.target.closest('[data-stock-adj]');
-        if (adjBtn && !adjBtn.disabled) {
-          const id = Number(adjBtn.getAttribute('data-stock-adj'));
-          const delta = Number(adjBtn.getAttribute('data-delta'));
-          const prod = products.find(p => p.id === id);
-          if (prod && prod.stockType === 'direct') {
-            prod.stock = Math.max(0, prod.stock + delta);
-            saveState();
-            renderAll();
-          }
-          return;
-        }
-
-        const editBtn = e.target.closest('[data-edit-id]');
-        if (editBtn) {
-          const id = Number(editBtn.getAttribute('data-edit-id'));
-          const prod = products.find(p => p.id === id);
-          if (prod) {
-            editProductIdInput.value = String(prod.id);
-            prodNameInput.value = prod.name;
-            prodSkuInput.value = prod.sku || '';
-            prodCategoryInput.value = prod.category || '';
-            prodPriceInput.value = String(prod.price);
-            prodStockType.value = prod.stockType || 'direct';
-            prodLowLimit.value = String(prod.lowStockLimit || 5);
-
-            if (prod.stockType === 'recipe') {
-              directStockGroup.style.display = 'none';
-              recipeIngredientsGroup.style.display = 'block';
-              renderRecipeIngredientsSelection(prod.recipe || []);
-            } else {
-              directStockGroup.style.display = 'block';
-              recipeIngredientsGroup.style.display = 'none';
-              prodStockInput.value = String(prod.stock || 0);
-              prodDirectCostInput.value = String(prod.directCost || 0);
-            }
-            
-            // Set image state
-            if (prod.image) {
-              prodImageDataInput.value = prod.image;
-              prodImagePreview.src = prod.image;
-              prodImagePreview.style.display = 'block';
-              btnRemoveProdImage.style.display = 'inline-flex';
-            } else {
-              prodImageDataInput.value = '';
-              prodImagePreview.src = '';
-              prodImagePreview.style.display = 'none';
-              btnRemoveProdImage.style.display = 'none';
-            }
-
-            stockFormError.textContent = '';
-            stockFormTitle.textContent = 'แก้ไขข้อมูลสินค้า';
-            saveProductBtn.textContent = 'อัปเดตสินค้า';
-            cancelEditBtn.style.display = 'inline-flex';
-            prodNameInput.focus();
-          }
-          return;
-        }
-
-        const deleteBtn = e.target.closest('[data-delete-id]');
-        if (deleteBtn) {
-          const id = Number(deleteBtn.getAttribute('data-delete-id'));
-          products = products.filter(p => p.id !== id);
-          cart = cart.filter(c => c.productId !== id);
-          if (Number(editProductIdInput.value) === id) {
-            resetStockForm();
-          }
-          saveState();
-          renderAll();
-        }
-      });
-
-
-      // raw materials (Ingredients) form and list render
-      function resetIngForm() {
-        editIngIdInput.value = '';
-        ingNameInput.value = '';
-        ingStockInput.value = '';
-        ingUnitInput.value = '';
-        ingCostInput.value = '';
-        ingWasteRateInput.value = '0';
-        ingLowLimit.value = '100';
-        ingFormError.textContent = '';
-        ingFormTitle.textContent = 'เพิ่มวัตถุดิบเข้าคลังครัว';
-        saveIngBtn.textContent = 'บันทึกวัตถุดิบ';
-        cancelEditIngBtn.style.display = 'none';
-      }
-
-      cancelEditIngBtn.addEventListener('click', resetIngForm);
-
-      ingForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = ingNameInput.value.trim();
-        const stockVal = ingStockInput.value.trim();
-        const unit = ingUnitInput.value.trim();
-        const costVal = ingCostInput.value.trim();
-        const wasteVal = ingWasteRateInput.value.trim();
-        const lowLimitVal = ingLowLimit.value.trim();
-
-        if (!name) {
-          ingFormError.textContent = 'กรุณากรอกชื่อวัตถุดิบ';
-          ingNameInput.focus();
-          return;
-        }
-
-        const stock = Number(stockVal);
-        if (stockVal === '' || isNaN(stock) || stock < 0) {
-          ingFormError.textContent = 'กรุณาระบุจำนวนสต็อกเริ่มต้นให้ถูกต้อง (0 ขึ้นไป)';
-          ingStockInput.focus();
-          return;
-        }
-
-        if (!unit) {
-          ingFormError.textContent = 'กรุณาระบุหน่วยวัดปริมาณ';
-          ingUnitInput.focus();
-          return;
-        }
-
-        const cost = Number(costVal);
-        if (costVal === '' || isNaN(cost) || cost < 0) {
-          ingFormError.textContent = 'กรุณาระบุราคาซื้อหรือต้นทุนต่อหน่วยที่ถูกต้อง (0 ขึ้นไป)';
-          ingCostInput.focus();
-          return;
-        }
-
-        const wasteRate = Number(wasteVal);
-        if (isNaN(wasteRate) || wasteRate < 0 || wasteRate > 95) {
-          ingFormError.textContent = 'เปอร์เซ็นต์คัดทิ้งต้องอยู่ระหว่าง 0% ถึง 95%';
-          ingWasteRateInput.focus();
-          return;
-        }
-
-        const customLowLimit = Number(lowLimitVal);
-        if (lowLimitVal === '' || isNaN(customLowLimit) || customLowLimit < 0) {
-          ingFormError.textContent = 'กรุณาระบุเกณฑ์เตือนวัตถุดิบเหลือน้อยให้ถูกต้อง';
-          ingLowLimit.focus();
-          return;
-        }
-
-        const editingId = editIngIdInput.value ? Number(editIngIdInput.value) : null;
-
-        if (editingId) {
-          const existing = ingredients.find(i => i.id === editingId);
-          if (existing) {
-            existing.name = name;
-            existing.stock = stock;
-            existing.unit = unit;
-            existing.cost = cost;
-            existing.wasteRate = wasteRate;
-            existing.lowStockLimit = customLowLimit;
-          }
-        } else {
-          ingredients.push({
-            id: nextIngId++,
-            name,
-            stock,
-            unit,
-            cost,
-            wasteRate,
-            lowStockLimit: customLowLimit,
-            totalWasted: 0
-          });
-        }
-
-        resetIngForm();
-        saveState();
-        renderIngredientsTable();
-        renderStockTable();
-        renderPosCatalog();
-      });
-
-      function renderIngredientsTable() {
-        if (ingredients.length === 0) {
-          ingredientsTableBody.innerHTML = `
-            <tr>
-              <td colspan="8" style="text-align: center; padding: 32px; color: var(--muted);">
-                ยังไม่มีข้อมูลวัตถุดิบในคลัง กรุณากรอกแบบฟอร์มด้านซ้ายเพื่อเพิ่มวัตถุดิบเข้าระบบสูตรผลิตอาหาร/เครื่องดื่ม
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        let html = '';
-        ingredients.forEach(ing => {
-          let stockClass = '';
-          const lowLimit = ing.lowStockLimit || 100;
-          if (ing.stock <= 0) stockClass = 'out';
-          else if (ing.stock <= lowLimit) stockClass = 'low';
-
-          html += `
-            <tr>
-              <td><span class="product-sku">ING-${ing.id}</span></td>
-              <td><strong>${escapeHtml(ing.name)}</strong></td>
-              <td class="num" style="color: var(--brand); font-weight:700;">${formatCurrency(ing.cost)}</td>
-              <td class="num"><span class="stock-text ${stockClass}" style="font-size:14px; font-weight:700;">${ing.stock.toLocaleString('th-TH', { maximumFractionDigits: 2 })}</span></td>
-              <td><span class="product-cat-tag">${escapeHtml(ing.unit)} (เกณฑ์: ${lowLimit})</span></td>
-              <td class="num">
-                <div class="stock-adjust-group">
-                  <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-ing-adj="${ing.id}" data-delta="-10" ${ing.stock <= 0 ? 'disabled' : ''} title="-10">-10</button>
-                  <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-ing-adj="${ing.id}" data-delta="-1" ${ing.stock <= 0 ? 'disabled' : ''} title="-1">-1</button>
-                  <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-ing-adj="${ing.id}" data-delta="1" title="+1">+</button>
-                  <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-ing-adj="${ing.id}" data-delta="10" title="+10">+10</button>
-                </div>
-              </td>
-              <td class="num">
-                <button type="button" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: color-mix(in srgb, var(--danger) 25%, var(--border));" data-open-waste-modal="${ing.id}">
-                  🗑 บันทึกคัดทิ้ง/ขยะ
-                </button>
-              </td>
-              <td class="num">
-                <div class="row-actions">
-                  <button type="button" class="btn btn-secondary btn-sm" data-ing-edit-id="${ing.id}">แก้ไข</button>
-                  <button type="button" class="btn btn-danger-ghost" data-ing-delete-id="${ing.id}">ลบ</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        });
-        ingredientsTableBody.innerHTML = html;
-      }
-
-      ingredientsTableBody.addEventListener('click', (e) => {
-        // 1. Adjust raw ingredient quantity
-        const adjBtn = e.target.closest('[data-ing-adj]');
-        if (adjBtn && !adjBtn.disabled) {
-          const id = Number(adjBtn.getAttribute('data-ing-adj'));
-          const delta = Number(adjBtn.getAttribute('data-delta'));
-          const ing = ingredients.find(i => i.id === id);
-          if (ing) {
-            ing.stock = Math.max(0, ing.stock + delta);
-            saveState();
-            renderIngredientsTable();
-            renderStockTable();
-            renderPosCatalog();
-          }
-          return;
-        }
-
-        // 2. Open waste reporting popup modal
-        const wasteBtn = e.target.closest('[data-open-waste-modal]');
-        if (wasteBtn) {
-          const id = Number(wasteBtn.getAttribute('data-open-waste-modal'));
-          openWasteModal(id);
-          return;
-        }
-
-        // 3. Edit raw ingredient detail
-        const editBtn = e.target.closest('[data-ing-edit-id]');
-        if (editBtn) {
-          const id = Number(editBtn.getAttribute('data-ing-edit-id'));
-          const ing = ingredients.find(i => i.id === id);
-          if (ing) {
-            editIngIdInput.value = String(ing.id);
-            ingNameInput.value = ing.name;
-            ingStockInput.value = String(ing.stock);
-            ingUnitInput.value = ing.unit;
-            ingCostInput.value = String(ing.cost);
-            ingWasteRateInput.value = String(ing.wasteRate || 0);
-            ingLowLimit.value = String(ing.lowStockLimit || 100);
-
-            ingFormError.textContent = '';
-            ingFormTitle.textContent = 'แก้ไขข้อมูลวัตถุดิบ';
-            saveIngBtn.textContent = 'อัปเดตวัตถุดิบ';
-            cancelEditIngBtn.style.display = 'inline-flex';
-            ingNameInput.focus();
-          }
-          return;
-        }
-
-        // 4. Delete raw ingredient
-        const deleteBtn = e.target.closest('[data-ing-delete-id]');
-        if (deleteBtn) {
-          const id = Number(deleteBtn.getAttribute('data-ing-delete-id'));
-          ingredients = ingredients.filter(i => i.id !== id);
-          
-          // Remove references in products recipes
-          products.forEach(p => {
-            if (p.recipe) {
-              p.recipe = p.recipe.filter(r => r.ingredientId !== id);
-            }
-          });
-
-          if (Number(editIngIdInput.value) === id) {
-            resetIngForm();
-          }
-          saveState();
-          renderIngredientsTable();
-          renderStockTable();
-          renderPosCatalog();
-        }
-      });
+      prodCategorySelect.addEventListener('change', handleCategoryDropdownChange);
 
       // Save state helper redirection
       function renderAll() {
