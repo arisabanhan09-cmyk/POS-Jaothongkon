@@ -906,26 +906,25 @@
 
       <!-- Sign Up / Login Toggle Buttons -->
       <div class="sub-tabs-bar" style="margin-bottom: var(--space-5); display: flex;">
-        <button type="button" class="sub-tab-btn active" id="auth-tab-login" style="flex: 1;">เข้าสู่ระบบร้านเดิม</button>
-        <button type="button" class="sub-tab-btn" id="auth-tab-register" style="flex: 1;">เปิดบัญชีร้านค้าใหม่</button>
+        <button type="button" class="sub-tab-btn active" id="auth-tab-login" style="flex: 1;">เข้าสู่ระบบ</button>
+        <button type="button" class="sub-tab-btn" id="auth-tab-register" style="flex: 1;">เปิดบัญชีร้านใหม่</button>
       </div>
 
       <!-- LOGIN SECTION -->
       <div id="login-section">
+        <!-- New Phone-based Login Input instead of dynamic select of previous turn to avoid empty select block -->
         <div class="form-group">
-          <label class="field-label" for="select-active-shop">เลือกสาขา/ร้านค้าที่จดทะเบียนไว้:</label>
-          <select id="select-active-shop" class="select" style="margin-bottom: var(--space-3);">
-            <!-- Populated via JavaScript -->
-          </select>
+          <label class="field-label" for="login-phone-input">เบอร์โทรศัพท์ของร้านค้าที่สมัครไว้ *</label>
+          <input type="tel" id="login-phone-input" class="input" placeholder="กรอกเบอร์โทรศัพท์ 10 หลัก" required>
         </div>
         
         <div class="form-group" id="login-password-group">
-          <label class="field-label" for="login-password-input">ระบุรหัสผ่านเข้าใช้งานสาขานี้ *</label>
-          <input type="password" id="login-password-input" class="input" placeholder="กรอกรหัสผ่านเพื่อความปลอดภัย">
+          <label class="field-label" for="login-password-input">ระบุรหัสผ่านเข้าใช้งาน *</label>
+          <input type="password" id="login-password-input" class="input" placeholder="กรอกรหัสผ่านเพื่อความปลอดภัย" required>
         </div>
         
         <div id="login-error" class="field-error" style="margin-bottom: var(--space-2);"></div>
-        <button type="button" class="btn btn-primary" id="btn-login-shop" style="width: 100%; padding: 12px;">เข้าสู่ระบบร้านค้า</button>
+        <button type="button" class="btn btn-primary" id="btn-login-user" style="width: 100%; padding: 12px;">เข้าสู่ระบบร้านค้า</button>
       </div>
 
       <!-- REGISTER SECTION (Sign Up Form) -->
@@ -950,8 +949,8 @@
         </div>
         
         <div class="form-group" style="margin-top: var(--space-2);">
-          <label class="field-label" for="reg-password">กำหนดรหัสผ่านเข้าใช้งานสาขานี้ *</label>
-          <input type="password" id="reg-password" class="input" placeholder="ตั้งรหัสผ่านสำหรับเข้าใช้งานระบบ" required>
+          <label class="field-label" for="reg-password">กำหนดรหัสผ่านสำหรับเข้าใช้งานระบบ *</label>
+          <input type="password" id="reg-password" class="input" placeholder="ตั้งรหัสผ่านสาขา" required>
         </div>
 
         <div id="signup-error" class="field-error" style="margin-bottom: var(--space-2);"></div>
@@ -2265,156 +2264,6 @@
           }
         }
       }
-
-      // Dynamic load Firebase compat libraries to make deployment on GitHub Pages 100% robust
-      function loadAndConnectFirebase(config, showNotification = false) {
-        if (!config.apiKey || !config.databaseURL) {
-          if (showNotification) alert('กรุณากรอก API Key และ Database URL ให้ครบถ้วน!');
-          return;
-        }
-
-        firebaseStatusLabel.textContent = 'สถานะ: กำลังสตรีมเชื่อมต่อ...';
-        firebaseStatusLabel.style.color = 'var(--warning)';
-
-        // Injected Firebase Compat App
-        const scriptApp = document.createElement('script');
-        scriptApp.src="about:invalid#zPythonSafez";
-        document.head.appendChild(scriptApp);
-
-        scriptApp.onload = () => {
-          const scriptDb = document.createElement('script');
-          scriptDb.src="about:invalid#zPythonSafez";
-          document.head.appendChild(scriptDb);
-
-          scriptDb.onload = () => {
-            try {
-              // Initialize Firebase
-              firebase.initializeApp({
-                apiKey: config.apiKey,
-                databaseURL: config.databaseURL,
-                authDomain: config.authDomain || (config.projectId + ".firebaseapp.com"),
-                projectId: config.projectId,
-                appId: config.appId
-              });
-
-              firebaseDb = firebase.database();
-              firebaseStatusLabel.textContent = 'สถานะ: เชื่อมต่อคลาวด์แล้ว 🟢 (พร้อมสำรองข้อมูลอัตโนมัติ)';
-              firebaseStatusLabel.style.color = 'var(--brand)';
-
-              if (showNotification) alert('เชื่อมต่อระบบสำรองข้อมูล Firebase Realtime Database สำเร็จ!');
-
-              // Initial pull merge (pull from cloud if exists, else seed cloud with local storage)
-              firebaseDb.ref(`pos_data/${activeShopId}`).once('value', snapshot => {
-                if (snapshot.exists()) {
-                  const cloudData = snapshot.val();
-                  activeShop = cloudData;
-                  loadActiveShopData();
-                } else {
-                  firebaseDb.ref(`pos_data/${activeShopId}`).set(activeShop);
-                }
-              });
-
-            } catch (err) {
-              console.error(err);
-              firebaseStatusLabel.textContent = 'สถานะ: การเชื่อมต่อล้มเหลว 🔴';
-              firebaseStatusLabel.style.color = 'var(--danger)';
-              if (showNotification) alert('การเชื่อมต่อล้มเหลว: ' + err.message);
-            }
-          };
-        };
-      }
-
-      // Apply Theme Color
-      function applyThemeColor(hex) {
-        document.documentElement.style.setProperty('--brand', hex);
-        settingsCustomColor.value = hex;
-        customColorHex.textContent = hex.toUpperCase();
-      }
-
-      // Update brand display everywhere
-      function updateBrandUI() {
-        // Doc Title
-        docTitle.textContent = shopConfig.name + " - ระบบ POS และคลังสูตรผลิต";
-        
-        // Header Text
-        headerTitle.textContent = shopConfig.name;
-
-        // Header Logo
-        if (shopConfig.logo) {
-          headerLogo.innerHTML = `<img src="${shopConfig.logo}" alt="${escapeHtml(shopConfig.name)}">`;
-          headerLogo.style.background = 'transparent';
-        } else {
-          const cleanName = shopConfig.name.trim();
-          const monogram = cleanName ? cleanName.substring(0, 3).toUpperCase() : 'POS';
-          headerLogo.innerHTML = escapeHtml(monogram);
-          headerLogo.style.background = 'var(--brand)';
-        }
-
-        // Fill Settings Inputs
-        settingsShopName.value = shopConfig.name;
-        if (shopConfig.logo) {
-          settingsLogoImgPreview.src = shopConfig.logo;
-          settingsLogoImgPreview.style.display = 'block';
-          settingsLogoPlaceholderIcon.style.display = 'none';
-          btnRemoveLogo.style.display = 'inline-flex';
-        } else {
-          settingsLogoImgPreview.style.display = 'none';
-          settingsLogoPlaceholderIcon.style.display = 'block';
-          btnRemoveLogo.style.display = 'none';
-        }
-
-        // Fill QR Settings Preview
-        if (shopConfig.qrCode) {
-          settingsQrImgPreview.src = shopConfig.qrCode;
-          settingsQrImgPreview.style.display = 'block';
-          settingsQrPlaceholderIcon.style.display = 'none';
-          btnRemoveQr.style.display = 'inline-flex';
-        } else {
-          settingsQrImgPreview.style.display = 'none';
-          settingsQrPlaceholderIcon.style.display = 'block';
-          btnRemoveQr.style.display = 'none';
-        }
-
-        // Fill Firebase Credentials
-        if (shopConfig.firebaseConfig) {
-          fbApiKey.value = shopConfig.firebaseConfig.apiKey || '';
-          fbDbUrl.value = shopConfig.firebaseConfig.databaseURL || '';
-          fbProjectId.value = shopConfig.firebaseConfig.projectId || '';
-          fbAppId.value = shopConfig.firebaseConfig.appId || '';
-        }
-
-        // Apply theme color from config
-        applyThemeColor(shopConfig.themeColor || '#0f766e');
-      }
-
-      // Populates Category Dropdown options based on products + adding a special "+ เพิ่มหมวดหมู่ใหม่" option
-      function populateCategoryDropdown(selectedCategoryValue = '') {
-        const categories = getCategories();
-        let optionsHtml = '';
-        
-        // Populate standard categories
-        categories.forEach(cat => {
-          optionsHtml += `<option value="${escapeHtml(cat)}" ${selectedCategoryValue === cat ? 'selected' : ''}>${escapeHtml(cat)}</option>`;
-        });
-        
-        // Add "+ เพิ่มหมวดหมู่ใหม่..." option
-        optionsHtml += `<option value="ADD_NEW_CATEGORY" ${selectedCategoryValue === 'ADD_NEW_CATEGORY' ? 'selected' : ''}>+ เพิ่มหมวดหมู่ใหม่...</option>`;
-        
-        prodCategorySelect.innerHTML = optionsHtml;
-        handleCategoryDropdownChange();
-      }
-
-      function handleCategoryDropdownChange() {
-        if (prodCategorySelect.value === 'ADD_NEW_CATEGORY') {
-          prodCategoryNewContainer.style.display = 'block';
-          prodCategoryNewInput.focus();
-        } else {
-          prodCategoryNewContainer.style.display = 'none';
-          prodCategoryNewInput.value = '';
-        }
-      }
-
-      prodCategorySelect.addEventListener('change', handleCategoryDropdownChange);
 
       // Save state helper redirection
       function renderAll() {
