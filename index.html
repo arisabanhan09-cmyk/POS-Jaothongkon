@@ -1,0 +1,3766 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title id="doc-title">ระบบ POS ขายหน้าร้านและจัดการสต็อกหลังร้าน</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-subtle: #f8fafc;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --ink: #0f172a;
+      --ink-secondary: #334155;
+      --muted: #64748b;
+      --brand: #0f766e;
+      --brand-hover: color-mix(in srgb, var(--brand) 85%, #000000);
+      --brand-soft: color-mix(in srgb, var(--brand) 8%, transparent);
+      --brand-ink: #ffffff;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --warning: #d97706;
+      --warning-soft: #fffbeb;
+      --success: #16a34a;
+      --success-soft: #f0fdf4;
+      --radius-sm: 8px;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 12px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.14);
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fullscreen Auth / Registration View */
+    .auth-backdrop {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 60%, #000) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+      z-index: 100;
+    }
+
+    .auth-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 480px;
+      padding: var(--space-8) var(--space-6);
+    }
+
+    /* Header & Top Navigation */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: var(--space-3) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--brand);
+      color: var(--brand-ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.25;
+    }
+
+    .brand-subtitle {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .nav-tabs {
+      display: inline-flex;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .nav-tab {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .nav-tab:hover {
+      color: var(--ink);
+      background: rgba(15, 23, 42, 0.04);
+    }
+
+    .nav-tab.active {
+      background: var(--surface);
+      color: var(--brand);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-tab:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+
+    .view-panel {
+      display: none;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    /* Buttons & Inputs */
+    .btn {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.05s ease;
+      white-space: nowrap;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: var(--brand-ink);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--brand-hover);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--ink);
+      border-color: var(--border-strong);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--surface-subtle);
+      border-color: var(--muted);
+    }
+
+    .btn-danger-ghost {
+      background: transparent;
+      color: var(--danger);
+      border-color: transparent;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .btn-danger-ghost:hover:not(:disabled) {
+      background: var(--danger-soft);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      font: inherit;
+      font-size: 14px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .input:focus,
+    .select:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      margin-bottom: 6px;
+    }
+
+    .field-error {
+      color: var(--danger);
+      font-size: 12px;
+      margin-top: 4px;
+      min-height: 18px;
+    }
+
+    /* POS Layout */
+    .pos-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    @media (min-width: 960px) {
+      .pos-layout {
+        grid-template-columns: minmax(0, 1fr) 390px;
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .catalog-header {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1 1 260px;
+    }
+
+    .search-box .input {
+      padding-left: 38px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .category-bar {
+      padding: var(--space-3) var(--space-5);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      background: var(--surface-subtle);
+    }
+
+    .cat-pill {
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .cat-pill:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    .cat-pill.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: var(--brand-ink);
+    }
+
+    /* Product Cards */
+    .product-grid {
+      padding: var(--space-5);
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .product-card {
+      font: inherit;
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      height: 258px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+      position: relative;
+    }
+
+    .product-card:hover:not(:disabled) {
+      border-color: var(--brand);
+      box-shadow: var(--shadow);
+    }
+
+    .product-card:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+
+    .product-card:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    .product-card:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .product-image-container {
+      width: 100%;
+      height: 120px;
+      background: var(--surface-subtle);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-image-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-image-placeholder {
+      font-size: 32px;
+      color: var(--muted);
+      user-select: none;
+    }
+
+    .product-info-container {
+      padding: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .product-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: var(--space-1);
+    }
+
+    .product-cat-tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90px;
+    }
+
+    .product-sku {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 80px;
+    }
+
+    .product-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 2px 0;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 38px;
+    }
+
+    .product-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      padding-top: var(--space-2);
+      border-top: 1px dashed var(--border);
+      margin-top: auto;
+    }
+
+    .product-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    .stock-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .stock-text.out {
+      color: var(--danger);
+    }
+
+    .stock-text.low {
+      color: var(--warning);
+    }
+
+    /* Order / Cart Panel */
+    .cart-panel {
+      position: sticky;
+      top: 76px;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 96px);
+    }
+
+    .cart-header {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+
+    .cart-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .cart-items {
+      padding: var(--space-4) var(--space-5);
+      overflow-y: auto;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      min-height: 220px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    /* Small thumbnail in cart */
+    .cart-item-thumbnail {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .cart-item-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cart-item-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .cart-item-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 0 0 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cart-item-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .qty-controls {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+    }
+
+    .qty-btn {
+      font: inherit;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: var(--ink);
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qty-btn:hover:not(:disabled) {
+      background: var(--surface-subtle);
+      color: var(--brand);
+    }
+
+    .qty-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .qty-value {
+      min-width: 28px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .cart-item-subtotal {
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 72px;
+      text-align: right;
+    }
+
+    .cart-footer {
+      padding: var(--space-4) var(--space-5);
+      border-top: 1px solid var(--border);
+      background: var(--surface-subtle);
+      border-bottom-left-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 14px;
+      color: var(--ink-secondary);
+    }
+
+    .summary-row.total {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--border);
+    }
+
+    .summary-row.total .amount {
+      color: var(--brand);
+      font-size: 22px;
+    }
+
+    .payment-and-delivery-selection {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-top: var(--space-1);
+    }
+
+    .selection-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-2);
+    }
+
+    .payment-tab, .delivery-tab {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 6px var(--space-2);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--ink-secondary);
+    }
+
+    .payment-tab.active, .delivery-tab.active {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+
+    .qr-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-3);
+      text-align: center;
+      margin-top: var(--space-1);
+    }
+
+    .qr-img {
+      max-width: 140px;
+      max-height: 140px;
+      margin: 0 auto var(--space-1) auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .qr-placeholder {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto var(--space-2) auto;
+      border: 3px solid var(--brand);
+      border-radius: var(--radius-sm);
+      background: repeating-conic-gradient(from 45deg, #000 0 25%, #fff 0 50%) 50% / 12px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cash-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+      padding-top: var(--space-2);
+    }
+
+    .change-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .change-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .change-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* Kitchen View Tickets Grid */
+    .kitchen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .kitchen-ticket {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      max-height: 400px;
+    }
+
+    .kitchen-ticket-header {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+    }
+
+    .kitchen-ticket-header.urgent {
+      background: var(--danger-soft);
+      border-bottom-color: color-mix(in srgb, var(--danger) 15%, var(--border));
+    }
+
+    .kitchen-ticket-body {
+      padding: var(--space-4);
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .kitchen-ticket-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      margin-bottom: var(--space-2);
+      font-size: 15px;
+    }
+
+    .kitchen-ticket-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .kitchen-ticket-footer {
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--border);
+      background: var(--surface-subtle);
+      border-bottom-left-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-4) var(--space-5);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--brand);
+      margin-top: 4px;
+    }
+
+    /* Modal Backdrop for report waste */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+      z-index: 60;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 420px;
+      padding: var(--space-6);
+      border: 1px solid var(--border);
+    }
+  </style>
+<style data-link-removed-style>a[data-link-removed],a[href*="zPythonSafez"]:not([onclick]){pointer-events:none!important;cursor:default!important;opacity:.6}</style></head>
+<body>
+
+  <!-- Fullscreen Multi-shop Switcher / Sign-up view with password -->
+  <div id="auth-view" class="auth-backdrop">
+    <div class="auth-card">
+      <div style="text-align: center; margin-bottom: var(--space-5);">
+        <span style="font-size: 48px;">🏪</span>
+        <h2 style="margin: var(--space-2) 0 4px 0; font-weight: 800; color: var(--ink);">สมัครใช้งาน / เข้าสู่ระบบร้านค้า</h2>
+        <p style="margin: 0; font-size: 13px; color: var(--muted);">ระบบ POS จัดการคลังวัตถุดิบและสูตรผลิตแยกบัญชีสาขาร้านค้า</p>
+      </div>
+
+      <!-- Quick Switch Shop dropdown if registered shops exist -->
+      <div id="shop-selection-group" style="display: none; margin-bottom: var(--space-4); background: var(--surface-subtle); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <label class="field-label" style="font-weight: 700;" for="select-active-shop">เลือกสาขาร้านค้าที่เปิดใช้งานอยู่:</label>
+        <select id="select-active-shop" class="select" style="margin-bottom: var(--space-2);"></select>
+        
+        <!-- Password input for switching shops safely -->
+        <div id="login-password-group" style="margin-bottom: var(--space-3);">
+          <label class="field-label" for="login-password-input">ระบุรหัสผ่านเข้าใช้งานสาขานี้ *</label>
+          <input type="password" id="login-password-input" class="input" placeholder="กรอกรหัสผ่าน">
+        </div>
+        
+        <button type="button" class="btn btn-primary btn-sm" id="btn-login-shop" style="width: 100%;">เข้าสู่ระบบร้านค้าสาขาที่เลือก</button>
+      </div>
+
+      <div style="text-align: center; position: relative; margin: var(--space-4) 0;" id="auth-divider">
+        <span style="background: var(--surface); padding: 0 12px; font-size: 12px; font-weight: 700; color: var(--muted); position: relative; z-index: 5;">หรือสมัครสมาชิกร้านใหม่</span>
+        <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid var(--border); z-index: 1;"></div>
+      </div>
+
+      <!-- Sign Up Form -->
+      <form id="signup-form" novalidate>
+        <div class="form-group">
+          <label class="field-label" for="reg-shop-name">ชื่อร้านค้า / แบรนด์สาขา *</label>
+          <input type="text" id="reg-shop-name" class="input" placeholder="เช่น ชาไข่มุก ดีมีสุข สาขาพระราม 9" required>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="reg-owner-name">ชื่อ-นามสกุล เจ้าของร้าน *</label>
+          <input type="text" id="reg-owner-name" class="input" placeholder="เช่น นายสมชาย รักบริการ" required>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="field-label" for="reg-owner-phone">เบอร์โทรศัพท์ติดต่อ *</label>
+            <input type="tel" id="reg-owner-phone" class="input" placeholder="081-xxxxxxx" required>
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="reg-owner-email">อีเมลร้านค้า *</label>
+            <input type="email" id="reg-owner-email" class="input" placeholder="shop@example.com" required>
+          </div>
+        </div>
+        
+        <!-- Password input for new store accounts -->
+        <div class="form-group" style="margin-top: var(--space-2);">
+          <label class="field-label" for="reg-password">รหัสผ่านสำหรับเข้าใช้งานสาขานี้ *</label>
+          <input type="password" id="reg-password" class="input" placeholder="ตั้งรหัสผ่านสำหรับสาขานี้" required>
+        </div>
+
+        <div id="signup-error" class="field-error" style="margin-bottom: var(--space-2);"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">เปิดบัญชีร้านค้าสาขาใหม่</button>
+      </form>
+    </div>
+  </div>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-mark" id="header-logo" aria-hidden="true">POS</div>
+        <div>
+          <h1 class="brand-title" id="header-title">ระบบขายหน้าร้าน &amp; จัดการสต็อก</h1>
+          <p class="brand-subtitle" id="header-subtitle">เชื่อมต่อรายการขายหน้าร้านกับจำนวนสต็อกและวัตถุดิบหลังร้านอัตโนมัติ</p>
+        </div>
+      </div>
+
+      <!-- User Information switcher in header -->
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <div style="text-align: right;">
+          <div style="font-size: 12px; font-weight: 700;" id="user-display-name">ผู้ดูแลระบบ (Owner)</div>
+          <div style="font-size: 10px; color: var(--muted);" id="shop-display-branch">สาขาพระราม 9</div>
+        </div>
+        <select id="user-role-switcher" class="select" style="padding: 4px var(--space-3); font-size: 12px; height: 32px; width: 140px;"></select>
+      </div>
+
+      <nav class="nav-tabs" aria-label="เมนูหลัก">
+        <button type="button" class="nav-tab active" id="tab-pos" data-view="pos">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M6 16h12"></path>
+          </svg>
+          ขายหน้าร้าน (POS)
+        </button>
+        <button type="button" class="nav-tab" id="tab-kitchen" data-view="kitchen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          🍳 จอคิวในครัว (Kitchen)
+        </button>
+        <button type="button" class="nav-tab" id="tab-stock" data-view="stock">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          จัดการสต็อกและต้นทุน
+        </button>
+        <button type="button" class="nav-tab" id="tab-settings" data-view="settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          ตั้งค่าร้านค้า
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- VIEW 1: POS SELLING FRONT -->
+    <section id="view-pos" class="view-panel active" aria-labelledby="tab-pos">
+      
+      <!-- Delivery Simulation & Notification Bar -->
+      <div id="delivery-alert-bar" class="delivery-incoming-bar" style="display: none;">
+        <div style="display: flex; align-items: center; gap: var(--space-2);">
+          <span style="font-size: 20px;" id="incoming-delivery-icon">🛵</span>
+          <div>
+            <strong style="color: var(--brand);" id="incoming-delivery-title">ออเดอร์ใหม่เข้าจาก GrabFood!</strong>
+            <p style="margin: 0; font-size: 12px; color: var(--ink-secondary);" id="incoming-delivery-items">เอสเพรสโซ่เย็น x1, เค้กช็อกโกแลตฟัดจ์ x1</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: var(--space-2);">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-accept-delivery">รับออเดอร์และจัดส่งครัว</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-reject-delivery" style="padding: 4px 8px;">ปฏิเสธ</button>
+        </div>
+      </div>
+
+      <div class="pos-layout">
+        <!-- Product Catalog -->
+        <div class="card">
+          <div class="catalog-header">
+            <div class="search-box">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="search" id="pos-search" class="input" placeholder="ค้นหาชื่อสินค้า หรือรหัส SKU..." aria-label="ค้นหาสินค้า">
+            </div>
+            
+            <!-- Delivery Simulation Triggers for testing -->
+            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--muted);">จำลองออเดอร์เดลิเวอรี่เข้า:</span>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-sim-grab" style="padding: 4px 8px; font-size: 11px;">🟢 Grab</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-sim-shopee" style="padding: 4px 8px; font-size: 11px;">🟠 Shopee</button>
+            </div>
+          </div>
+
+          <div class="category-bar" id="pos-category-bar" role="tablist" aria-label="หมวดหมู่สินค้า">
+            <button type="button" class="cat-pill active" data-cat="ALL">ทั้งหมด</button>
+          </div>
+
+          <div id="pos-catalog-body">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Order / Checkout Panel -->
+        <aside class="card cart-panel" aria-label="ตะกร้าคิดเงิน">
+          <div class="cart-header">
+            <h2 class="cart-title">รายการขายปัจจุบัน</h2>
+            <button type="button" class="btn btn-danger-ghost" id="clear-cart-btn" disabled>ล้างรายการ</button>
+          </div>
+
+          <div class="cart-items" id="cart-items-container">
+            <!-- Populated by JS -->
+          </div>
+
+          <div class="cart-footer">
+            
+            <!-- Order Type Selector (Walk-in vs Delivery Channels) -->
+            <div>
+              <label class="field-label">ช่องทางการขาย</label>
+              <div class="selection-grid-2" style="grid-template-columns: repeat(4, 1fr);" id="delivery-channel-selector">
+                <div class="delivery-tab active" data-channel="walkin">🏪 หน้าร้าน</div>
+                <div class="delivery-tab" data-channel="grab">🟢 Grab</div>
+                <div class="delivery-tab" data-channel="shopee">🟠 Shopee</div>
+                <div class="delivery-tab" data-channel="lineman">🟢 Lineman</div>
+              </div>
+            </div>
+
+            <!-- Payment Method Selector -->
+            <div>
+              <label class="field-label">วิธีชำระเงิน</label>
+              <div class="selection-grid-2" id="payment-method-selector">
+                <div class="payment-tab active" data-method="cash">💵 เงินสด</div>
+                <div class="payment-tab" data-method="qr">📱 สแกน QR โอนเงิน</div>
+              </div>
+            </div>
+
+            <!-- Total display -->
+            <div class="summary-row total" style="padding-top: var(--space-1); border-top: none;">
+              <span>ยอดสุทธิ</span>
+              <span class="amount" id="cart-total-amount">฿0.00</span>
+            </div>
+
+            <!-- QR Code Display Area (visible when QR is chosen) -->
+            <div id="payment-qr-container" class="qr-container" style="display: none;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--brand); display: block; margin-bottom: var(--space-1);" id="qr-text-header">สแกนเพื่อชำระเงิน</span>
+              <div id="qr-image-wrapper">
+                <!-- Dynamically displays user's custom QR or beautiful simulated QR -->
+                <div class="qr-placeholder" id="qr-placeholder"><span>QR CODE</span></div>
+              </div>
+              <p style="font-size: 11px; color: var(--muted); margin: 4px 0 0 0;">กรุณาตรวจสอบความถูกต้องของยอดเงินก่อนรับโอน</p>
+            </div>
+
+            <!-- Cash displays (visible when Cash is chosen) -->
+            <div class="cash-section" id="payment-cash-container">
+              <div>
+                <label class="field-label" for="cash-received-input">รับเงินสด (฿)</label>
+                <input type="number" id="cash-received-input" class="input" min="0" step="any" placeholder="0.00">
+              </div>
+              <div class="change-box">
+                <span class="change-label">เงินทอน</span>
+                <span class="change-value" id="change-amount-display">฿0.00</span>
+              </div>
+            </div>
+
+            <div id="checkout-error" class="field-error" role="alert"></div>
+
+            <button type="button" class="btn btn-primary" id="checkout-btn" disabled style="width: 100%; padding: 12px;">
+              รับชำระเงิน ส่งเข้าครัวและตัดสต็อก
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- VIEW 2: KITCHEN QUEUE SCREEN (จอสั่งงานในครัว) -->
+    <section id="view-kitchen" class="view-panel" aria-labelledby="tab-kitchen">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+        <h2 class="section-title" style="margin-bottom: 0;">👨‍🍳 หน้าจอออเดอร์ส่งห้องครัว (Kitchen Display System - KDS)</h2>
+        <div style="font-size: 13px; color: var(--muted); font-weight: 600;" id="kitchen-count-text">คิวค้างส่ง: 0 ออเดอร์</div>
+      </div>
+
+      <div id="kitchen-orders-container" class="kitchen-grid">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: BACK-OFFICE STOCK & RECIPES MANAGEMENT -->
+    <section id="view-stock" class="view-panel" aria-labelledby="tab-stock">
+      <!-- Back Office Switcher (Products vs Raw Materials vs Analytics) -->
+      <div class="sub-tabs-bar" style="max-width: 600px; margin: 0 auto var(--space-6) auto;">
+        <button type="button" class="sub-tab-btn active" id="subtab-products">จัดการสินค้า &amp; สูตรผลิต</button>
+        <button type="button" class="sub-tab-btn" id="subtab-ingredients">จัดการคลังวัตถุดิบหลังร้าน</button>
+        <button type="button" class="sub-tab-btn" id="subtab-reports">รายงานต้นทุน กำไร &amp; สูญเสีย</button>
+      </div>
+
+      <!-- PANEL 1: PRODUCTS AND RECIPES -->
+      <div id="panel-products" class="stock-layout">
+        <!-- Product Form -->
+        <div class="card form-card">
+          <h2 class="section-title" id="stock-form-title">เพิ่มสินค้าเข้าสต็อก</h2>
+          <form id="stock-form" novalidate>
+            <input type="hidden" id="edit-product-id" value="">
+
+            <div class="form-group">
+              <label class="field-label" for="prod-name">ชื่อสินค้า/เมนู *</label>
+              <input type="text" id="prod-name" class="input" placeholder="เช่น อเมริกาโน่เย็น, สปาเก็ตตี้" required>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label" for="prod-sku">รหัสสินค้า (SKU)</label>
+                <input type="text" id="prod-sku" class="input" placeholder="เช่น CF-001">
+              </div>
+              <div class="form-group">
+                <label class="field-label" for="prod-category">หมวดหมู่</label>
+                <input type="text" id="prod-category" class="input" placeholder="เช่น เครื่องดื่ม, อาหาร">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label" for="prod-price">ราคาขาย (฿) *</label>
+                <input type="number" id="prod-price" class="input" min="0" step="0.01" placeholder="0.00" required>
+              </div>
+              <div class="form-group">
+                <label class="field-label" for="prod-stock-type">ระบบการตัดคลัง *</label>
+                <select id="prod-stock-type" class="select">
+                  <option value="direct">ตัดจากสต็อกสินค้าโดยตรง (สำหรับสินค้าทั่วไป)</option>
+                  <option value="recipe">ตัดตามสูตรวัตถุดิบอาหาร/เครื่องดื่ม</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Direct Stock field (only show when stock type is direct) -->
+            <div id="direct-stock-group">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label" for="prod-stock">จำนวนสต็อกพร้อมขาย *</label>
+                  <input type="number" id="prod-stock" class="input" min="0" step="1" placeholder="0">
+                </div>
+                <div class="form-group">
+                  <label class="field-label" for="prod-direct-cost">ต้นทุนต่อชิ้น (฿) *</label>
+                  <input type="number" id="prod-direct-cost" class="input" min="0" step="any" placeholder="0.00">
+                </div>
+              </div>
+            </div>
+
+            <!-- Recipe Selection list (only show when stock type is recipe) -->
+            <div class="form-group" id="recipe-ingredients-group" style="display: none;">
+              <label class="field-label">สูตรวัตถุดิบในการผลิต (Recipe Formulation)</label>
+              <p class="brand-subtitle" style="margin-top:-4px; margin-bottom: 8px; font-size:11px;">เลือกวัตถุดิบและใส่ปริมาณที่ใช้ผลิตสินค้าชิ้นนี้ 1 หน่วย (ต้นทุนสูตรจะคำนวณจากคลังวัตถุดิบโดยอัตโนมัติ)</p>
+              
+              <div class="recipe-list-wrapper" id="recipe-ingredients-list">
+                <!-- Dynamically filled with checkboxes for all available ingredients -->
+              </div>
+            </div>
+
+            <!-- Product Low stock custom threshold input -->
+            <div class="form-group" id="prod-low-limit-group">
+              <label class="field-label" for="prod-low-limit">เกณฑ์แจ้งเตือนจำนวนสต็อกเหลือน้อย (เตือนจัดซื้อ) *</label>
+              <input type="number" id="prod-low-limit" class="input" min="0" value="5" placeholder="ระบุเกณฑ์ที่ต้องการแจ้งเตือน">
+            </div>
+
+            <!-- Custom Product Image Picker -->
+            <div class="form-group">
+              <label class="field-label">รูปภาพสินค้า</label>
+              <div class="image-picker-zone" id="img-picker-trigger">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--muted); margin-bottom: 4px;">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <div style="font-size: 13px; font-weight: 600; color: var(--ink-secondary);">คลิกเพื่ออัปโหลดรูปภาพสินค้า</div>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">รองรับ JPG, PNG หรือ GIF</div>
+                <input type="file" id="prod-image-file" accept="image/*" style="display: none;">
+                <input type="hidden" id="prod-image-data" value="">
+                <img id="prod-image-preview" class="image-picker-preview" style="display: none;" alt="Preview">
+              </div>
+              <button type="button" class="btn btn-danger-ghost btn-sm" id="btn-remove-prod-image" style="display: none; margin-top: var(--space-1); width: 100%;">
+                นำรูปภาพออก
+              </button>
+            </div>
+
+            <div id="stock-form-error" class="field-error" role="alert"></div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="save-product-btn" style="flex: 1;">
+                บันทึกสินค้า
+              </button>
+              <button type="button" class="btn btn-secondary" id="cancel-edit-btn" style="display: none;">
+                ยกเลิก
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="card">
+          <div class="table-header-bar">
+            <h2 class="section-title" style="margin: 0;">รายการสินค้าและอาหารคลัง</h2>
+            <div class="search-box" style="max-width: 250px;">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="search" id="stock-search" class="input" placeholder="ค้นหาในร้าน..." aria-label="ค้นหาในคลังสินค้า">
+            </div>
+          </div>
+
+          <div id="stock-table-container">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 2: RAW INGREDIENTS INVENTORY -->
+      <div id="panel-ingredients" class="stock-layout" style="display: none;">
+        <!-- Ingredient Add Form -->
+        <div class="card form-card">
+          <h2 class="section-title" id="ing-form-title">เพิ่มวัตถุดิบเข้าคลังครัว</h2>
+          <form id="ing-form" novalidate>
+            <input type="hidden" id="edit-ing-id" value="">
+
+            <div class="form-group">
+              <label class="field-label" for="ing-name">ชื่อวัตถุดิบ *</label>
+              <input type="text" id="ing-name" class="input" placeholder="เช่น เมล็ดกาแฟอาราบิก้า, นมสด, แก้วพลาสติก" required>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label" for="ing-stock">จำนวนคงคลังเริ่มต้น *</label>
+                <input type="number" id="ing-stock" class="input" min="0" step="any" placeholder="0" required>
+              </div>
+              <div class="form-group">
+                <label class="field-label" for="ing-unit">หน่วยวัดปริมาณ *</label>
+                <input type="text" id="ing-unit" class="input" placeholder="เช่น กรัม, มล., ใบ, ชิ้น" required>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="field-label" for="ing-cost">ราคาซื้อ / ต้นทุนต่อหน่วย (฿) *</label>
+                <input type="number" id="ing-cost" class="input" min="0" step="any" placeholder="ต้นทุนเฉลี่ยต่อ 1 หน่วย" required>
+              </div>
+              <div class="form-group">
+                <label class="field-label" for="ing-waste-rate">เปอร์เซ็นต์คัดทิ้งทั่วไป (%)</label>
+                <input type="number" id="ing-waste-rate" class="input" min="0" max="95" placeholder="0%" value="0">
+              </div>
+            </div>
+
+            <!-- Customized Low stock threshold for raw ingredients -->
+            <div class="form-group">
+              <label class="field-label" for="ing-low-limit">เกณฑ์แจ้งเตือนวัตถุดิบเหลือน้อย (เตือนจัดซื้อ) *</label>
+              <input type="number" id="ing-low-limit" class="input" min="0.01" step="any" value="100" placeholder="ระบุเกณฑ์ที่ต้องจัดซื้อเพิ่ม" required>
+            </div>
+
+            <div id="ing-form-error" class="field-error" role="alert"></div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="save-ing-btn" style="flex: 1;">
+                บันทึกวัตถุดิบ
+              </button>
+              <button type="button" class="btn btn-secondary" id="cancel-edit-ing-btn" style="display: none;">
+                ยกเลิก
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Raw Materials Stock Table -->
+        <div class="card">
+          <div class="table-header-bar">
+            <h2 class="section-title" style="margin: 0;">คลังวัตถุดิบอาหารและเครื่องดื่ม (F&amp;B Ingredients Stock)</h2>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>รหัส</th>
+                  <th>ชื่อวัตถุดิบ</th>
+                  <th class="num">ต้นทุน/หน่วย (฿)</th>
+                  <th class="num">สต็อกคงเหลือปัจจุบัน</th>
+                  <th>หน่วยวัด</th>
+                  <th class="num">ปรับสต็อกวัตถุดิบ</th>
+                  <th class="num">บันทึกคัดทิ้ง/สูญเสีย</th>
+                  <th class="num">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="ingredients-table-body">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 3: REPORTS AND COST ANALYTICS (สรุปต้นทุนกำไร และ เปอร์เซ็นขยะสูญเสีย) -->
+      <div id="panel-reports" style="display: none;">
+        <!-- Analytics Dashboard Metrics cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div style="font-size: 13px; color: var(--muted); font-weight: 700;">ยอดขายทั้งหมด (Total Revenue)</div>
+            <div class="stat-value" id="rep-revenue" style="color: var(--success);">฿0.00</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size: 13px; color: var(--muted); font-weight: 700;">ต้นทุนวัตถุดิบรวม (COGS Cost)</div>
+            <div class="stat-value" id="rep-cogs" style="color: var(--warning);">฿0.00</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size: 13px; color: var(--muted); font-weight: 700;">มูลค่าสูญเสียวัตถุดิบขยะ (Waste Spoilage)</div>
+            <div class="stat-value" id="rep-waste-cost" style="color: var(--danger);">฿0.00</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size: 13px; color: var(--muted); font-weight: 700;">กำไรขั้นต้นร้านค้า (Gross Profit)</div>
+            <div class="stat-value" id="rep-profit" style="color: var(--brand);">฿0.00</div>
+          </div>
+        </div>
+
+        <div class="pos-layout">
+          <!-- Wastage Analysis & Percentage Table -->
+          <div class="card" style="padding: var(--space-5);">
+            <h3 class="section-title">วิเคราะห์สัดส่วนขยะคัดทิ้งรายวัตถุดิบ (% Spoilage and Waste Analysis)</h3>
+            <p class="brand-subtitle" style="margin-top: -8px; margin-bottom: var(--space-4);">แสดงเปอร์เซ็นต์วัตถุดิบรวมที่ถูกคัดทิ้ง เปรียบเทียบระหว่างจำนวนที่ใช้งานจริงกับจำนวนขยะที่บันทึกสูญเสียหลังครัว</p>
+            
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ชื่อวัตถุดิบ</th>
+                    <th class="num">ต้นทุนวัตถุดิบ</th>
+                    <th class="num">สต็อกปัจจุบัน</th>
+                    <th class="num">จำนวนที่คัดทิ้งขยะสะสม</th>
+                    <th class="num">มูลค่าสูญเสียสะสม</th>
+                    <th class="num">อัตราคัดทิ้งสูญเสีย (%)</th>
+                  </tr>
+                </thead>
+                <tbody id="waste-report-table-body">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Menu Profit Margin Ranking -->
+          <div class="card" style="padding: var(--space-5);">
+            <h3 class="section-title">อัตรากำไรขั้นต้นแต่ละเมนู (Unit Cost & Profit Margin per Menu)</h3>
+            <p class="brand-subtitle" style="margin-top: -8px; margin-bottom: var(--space-4);">แสดงราคาขาย ต้นทุนวัตถุดิบต่อเมนูที่คำนวณตามสูตรผลิต และ เปอร์เซ็นต์อัตรากำไรเพื่อปรับราคา</p>
+            
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>เมนูสินค้า</th>
+                    <th class="num">ราคาขาย</th>
+                    <th class="num">ต้นทุนวัตถุดิบต่อหน่วย</th>
+                    <th class="num">กำไรขั้นต้นต่อแก้ว/จาน</th>
+                    <th class="num">เปอร์เซ็นกำไร (%)</th>
+                  </tr>
+                </thead>
+                <tbody id="menu-cogs-table-body">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: SETTINGS -->
+    <section id="view-settings" class="view-panel" aria-labelledby="tab-settings">
+      <!-- Settings sections: Shop Config vs Employee List -->
+      <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-6); align-items: start;">
+        
+        <!-- Shop profile settings card -->
+        <div class="card" style="padding: var(--space-6);">
+          <h2 class="section-title">ตั้งค่าข้อมูลร้านค้า (Shop Profile Settings)</h2>
+          <p class="brand-subtitle" style="margin-bottom: var(--space-5);">กำหนดชื่อและโลโก้ของร้านคุณได้เองทันที ระบบจะนำไปแสดงที่ส่วนหัวข้อหลักและในใบเสร็จคิดเงินโดยอัตโนมัติ</p>
+          
+          <div class="form-group">
+            <label class="field-label" for="settings-shop-name">ชื่อร้านค้า *</label>
+            <input type="text" id="settings-shop-name" class="input" placeholder="ระบุชื่อร้านค้าของคุณ">
+          </div>
+
+          <div class="form-group" style="margin-top: var(--space-4);">
+            <label class="field-label">โลโก้ร้านค้า</label>
+            <div style="display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-2); flex-wrap: wrap;">
+              <div id="settings-logo-preview-container" style="width: 88px; height: 88px; border-radius: var(--radius); background: var(--surface-subtle); border: 2px dashed var(--border-strong); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                <span id="settings-logo-placeholder-icon" style="font-size: 28px;">🏪</span>
+                <img id="settings-logo-img-preview" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="Shop Logo">
+              </div>
+              <div style="flex: 1; min-width: 200px;">
+                <input type="file" id="settings-shop-logo-file" accept="image/*" style="display: none;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-trigger-logo-file">เลือกไฟล์ภาพโลโก้...</button>
+                <button type="button" class="btn btn-danger-ghost btn-sm" id="btn-remove-logo" style="display: none;">ลบโลโก้</button>
+                <p class="brand-subtitle" style="margin-top: var(--space-2); font-size: 11px;">รองรับ JPG, PNG หรือ SVG แนะนำเป็นรูปทรงจัตุรัสอัตราส่วน 1:1</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR Code Setup Section -->
+          <div class="form-group" style="margin-top: var(--space-4); border-top: 1px solid var(--border); padding-top: var(--space-4);">
+            <label class="field-label">คิวอาร์โค้ดสำหรับรับเงิน (QR Code Payment Setup)</label>
+            <p class="brand-subtitle" style="margin-top: -4px; margin-bottom: var(--space-3); font-size: 11px;">อัปโหลดคิวอาร์โค้ดรับโอน/พร้อมเพย์ของร้าน เพื่อให้ลูกค้าสแกนจ่ายได้ทันทีที่หน้าจอ POS</p>
+            <div style="display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;">
+              <div id="settings-qr-preview-container" style="width: 100px; height: 100px; border-radius: var(--radius-sm); background: var(--surface-subtle); border: 2px dashed var(--border-strong); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                <span id="settings-qr-placeholder-icon" style="font-size: 28px;">📱</span>
+                <img id="settings-qr-img-preview" style="display: none; width: 100%; height: 100%; object-fit: contain;" alt="Shop QR Code">
+              </div>
+              <div style="flex: 1; min-width: 200px;">
+                <input type="file" id="settings-shop-qr-file" accept="image/*" style="display: none;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-trigger-qr-file">เลือกรูปภาพ QR Code...</button>
+                <button type="button" class="btn btn-danger-ghost btn-sm" id="btn-remove-qr" style="display: none;">ลบ QR Code</button>
+                <p class="brand-subtitle" style="margin-top: var(--space-2); font-size: 11px;">รองรับรูปภาพ QR Code พร้อมเพย์, บัญชีธนาคาร ทุกประเภท</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customize Theme Color Section -->
+          <div style="margin-top: var(--space-5); border-top: 1px solid var(--border); padding-top: var(--space-4);">
+            <h3 class="section-title" style="font-size: 15px; margin-bottom: var(--space-3);">ปรับแต่งโทนสีของแอป (App Theme Color)</h3>
+            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+              <div>
+                <label class="field-label">เลือกชุดสีแนะนำ (Presets)</label>
+                <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2);" id="presets-container">
+                  <button type="button" class="btn btn-secondary btn-sm preset-color-btn" data-color="#0f766e" style="border-left: 6px solid #0f766e; padding: 6px 10px; font-size: 12px;">🍵 ชาเขียว/คาเฟ่</button>
+                  <button type="button" class="btn btn-secondary btn-sm preset-color-btn" data-color="#15803d" style="border-left: 6px solid #15803d; padding: 6px 10px; font-size: 12px;">🌿 มัทฉะ/ธรรมชาติ</button>
+                  <button type="button" class="btn btn-secondary btn-sm preset-color-btn" data-color="#b45309" style="border-left: 6px solid #b45309; padding: 6px 10px; font-size: 12px;">☕ กาแฟ/เบเกอรี่</button>
+                  <button type="button" class="btn btn-secondary btn-sm preset-color-btn" data-color="#be185d" style="border-left: 6px solid #be185d; padding: 6px 10px; font-size: 12px;">🍓 สตรอว์เบอร์รี่</button>
+                  <button type="button" class="btn btn-secondary btn-sm preset-color-btn" data-color="#1d4ed8" style="border-left: 6px solid #1d4ed8; padding: 6px 10px; font-size: 12px;">🌊 น้ำเงินสดชื่น</button>
+                  <button type="button" class="btn btn-secondary btn-sm preset-color-btn" data-color="#334155" style="border-left: 6px solid #334155; padding: 6px 10px; font-size: 12px;">🖤 เทามินิมอล</button>
+                </div>
+              </div>
+              <div>
+                <label class="field-label" for="settings-custom-color">หรือเลือกสีแบรนด์ของคุณเอง (Custom Color)</label>
+                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                  <input type="color" id="settings-custom-color" style="width: 60px; height: 38px; padding: 0; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); cursor: pointer;" value="#0f766e">
+                  <span style="font-size: 13px; color: var(--muted); font-family: monospace; font-weight: 600;" id="custom-color-hex">#0f766e</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Staff / Employee management card (New!) -->
+        <div class="card" style="padding: var(--space-6);">
+          <h2 class="section-title">👩‍💼 จัดการพนักงานในร้านค้า (Staff Roles &amp; Team Members)</h2>
+          <p class="brand-subtitle" style="margin-bottom: var(--space-5);">เพิ่มรายชื่อพนักงานและตำแหน่งงานภายในร้านเพื่อทำการล็อกอินระบุตัวผู้ขาย/จัดอาหารบนใบเสร็จและห้องครัว</p>
+          
+          <div class="pos-layout" style="grid-template-columns: 1fr; gap: var(--space-4);">
+            <!-- Add staff form -->
+            <form id="staff-form" novalidate style="background: var(--surface-subtle); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius);">
+              <h3 style="margin: 0 0 var(--space-3) 0; font-size: 14px; font-weight: 700;">ลงทะเบียนพนักงานใหม่</h3>
+              <div class="form-group">
+                <label class="field-label" for="staff-name-input">ชื่อ-นามสกุล พนักงาน *</label>
+                <input type="text" id="staff-name-input" class="input" placeholder="เช่น นส. สมหญิง ยิ้มแย้ม" required>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label" for="staff-phone-input">เบอร์โทรศัพท์พนักงาน</label>
+                  <input type="tel" id="staff-phone-input" class="input" placeholder="089-xxxxxxx">
+                </div>
+                <div class="form-group">
+                  <label class="field-label" for="staff-role-select">ตำแหน่งงาน *</label>
+                  <select id="staff-role-select" class="select">
+                    <option value="manager">ผู้จัดการร้าน (Store Manager)</option>
+                    <option value="cashier">พนักงานขาย (Cashier)</option>
+                    <option value="kitchen">พนักงานครัว (Chef / Kitchen)</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">+ บันทึกรายชื่อพนักงาน</button>
+            </form>
+
+            <!-- Staff list table -->
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ชื่อพนักงาน</th>
+                    <th>ตำแหน่ง</th>
+                    <th>เบอร์โทร</th>
+                    <th class="num">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="staff-table-body">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account owner and active multi-tenant details -->
+        <div class="card" style="padding: var(--space-6);">
+          <h2 class="section-title" style="color: var(--danger);">🔒 ข้อมูลบัญชีผู้ใช้งานสาขาและสลับแบรนด์ร้านค้า</h2>
+          
+          <div style="background: var(--surface-subtle); border: 1px solid var(--border); padding: var(--space-4); border-radius: var(--radius-sm); margin-bottom: var(--space-4);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3);">
+              <div>
+                <span class="change-label" style="font-size: 11px;">เจ้าของแบรนด์บัญชี:</span>
+                <div style="font-weight: 700;" id="acc-owner-name">นายสมชาย รักบริการ</div>
+              </div>
+              <div>
+                <span class="change-label" style="font-size: 11px;">เบอร์โทรศัพท์:</span>
+                <div style="font-weight: 700;" id="acc-owner-phone">081-xxxxxxx</div>
+              </div>
+              <div>
+                <span class="change-label" style="font-size: 11px;">อีเมลสาขา:</span>
+                <div style="font-weight: 700;" id="acc-owner-email">shop@example.com</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary" id="btn-logout-auth" style="border-color: var(--danger); color: var(--danger);">
+              🚪 ออกจากระบบ / สลับบัญชีร้านค้าสาขาอื่น
+            </button>
+          </div>
+        </div>
+
+        <!-- Firebase & Future APIs integration Section -->
+        <div style="border-top: 1px solid var(--border); padding-top: var(--space-4);">
+          <h3 class="section-title" style="font-size: 15px; margin-bottom: var(--space-2); color: var(--brand);">เชื่อมต่อ GitHub, Firebase &amp; Delivery APIs</h3>
+          <p class="brand-subtitle" style="margin-bottom: var(--space-3); font-size: 11px;">เชื่อมต่อระบบ POS และคลังวัตถุดิบเข้ากับ Firebase Realtime Database ของคุณเพื่อสำรองข้อมูลขึ้นคลาวด์ พร้อมเตรียมความพร้อมสำหรับ GitHub และระบบสั่งซื้อเดลิเวอรี่ในอนาคต</p>
+          
+          <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-3);">
+            <!-- Firebase database configs -->
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border); padding: var(--space-3); border-radius: var(--radius-sm);">
+              <span style="font-size: 12px; font-weight: 700; color: var(--ink); display: block; margin-bottom: var(--space-2);">🔥 Firebase Web SDK Credentials (สตรีมและสำรองข้อมูล)</span>
+              
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label" style="font-size: 11px;" for="fb-api-key">API Key</label>
+                  <input type="password" id="fb-api-key" class="input" style="padding: 6px 10px; font-size: 12px;" placeholder="AIzaSy...">
+                </div>
+                <div class="form-group">
+                  <label class="field-label" style="font-size: 11px;" for="fb-db-url">Database URL</label>
+                  <input type="text" id="fb-db-url" class="input" style="padding: 6px 10px; font-size: 12px;" placeholder="about:invalid#zPythonSafez">
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="field-label" style="font-size: 11px;" for="fb-project-id">Project ID</label>
+                  <input type="text" id="fb-project-id" class="input" style="padding: 6px 10px; font-size: 12px;" placeholder="my-pos-shop">
+                </div>
+                <div class="form-group">
+                  <label class="field-label" style="font-size: 11px;" for="fb-app-id">App ID</label>
+                  <input type="text" id="fb-app-id" class="input" style="padding: 6px 10px; font-size: 12px;" placeholder="1:1234:web:abcd">
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; margin-top: var(--space-2); align-items: center; flex-wrap: wrap;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-connect-firebase" style="font-size: 11px; padding: 6px 12px;">⚡ เปิดใช้งาน Firebase Cloud Sync</button>
+                <span id="firebase-status-label" style="font-size: 11px; font-weight: 700; color: var(--muted);">สถานะ: ออฟไลน์ (เก็บข้อมูลเฉพาะในเบราว์เซอร์เครื่องนี้)</span>
+              </div>
+            </div>
+
+            <!-- Future API Integrations developer notes -->
+            <div style="background: var(--surface-subtle); border: 1px solid var(--border); padding: var(--space-3); border-radius: var(--radius-sm);">
+              <span style="font-size: 12px; font-weight: 700; color: var(--brand); display: block; margin-bottom: var(--space-1);">🛸 GitHub Pages Deployment &amp; Delivery Webhooks (อนาคต)</span>
+              <p class="brand-subtitle" style="margin: 0 0 var(--space-2) 0; font-size: 11px;">ระบบหน้าเว็บ POS นี้พร้อมสำหรับการจัดวางบน GitHub Pages ทันทีเมื่ออัปโหลดไฟล์ index.html</p>
+              
+              <div class="form-row-2" style="margin-bottom: var(--space-2);">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="field-label" style="font-size: 11px;" for="grab-merchant-id">Grab Merchant ID</label>
+                  <input type="text" id="grab-merchant-id" class="input" style="padding: 6px 10px; font-size: 12px;" placeholder="MERCHANT-123" readonly>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="field-label" style="font-size: 11px;" for="lineman-token">LINE MAN Client Token</label>
+                  <input type="text" id="lineman-token" class="input" style="padding: 6px 10px; font-size: 12px;" placeholder="LM-JWT-TOKEN" readonly>
+                </div>
+              </div>
+              <p class="brand-subtitle" style="margin: 0; font-size: 10px; color: var(--muted);">* โค้ด JavaScript ในไฟล์นี้ได้เตรียมโครงสร้าง callback ฟังก์ชันและ webhook คอยรับสัญญาณแจ้งเตือนออเดอร์จากเดลิเวอรี่ Grab / Shopee ไว้แล้ว สามารถให้นักพัฒนาขยายขีดความสามารถร่วมกับ Firebase Cloud Functions ได้ง่ายดาย</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Record Waste Spoilage Modal (New!) -->
+  <div id="waste-spoilage-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="waste-modal-title">
+    <div class="modal-card">
+      <h3 id="waste-modal-title" class="section-title">บันทึกของเสีย / วัตถุดิบคัดทิ้งหลังครัว</h3>
+      <p class="brand-subtitle" style="margin-top:-6px; margin-bottom: var(--space-4);">กรอกจำนวนวัตถุดิบที่สูญเสีย เสียหาย หมดอายุ หรือตัดแต่งทิ้ง เพื่อหักออกจากคลังและคำนวณต้นทุนอย่างแม่นยำ</p>
+      
+      <input type="hidden" id="waste-ing-id" value="">
+      
+      <div class="form-group">
+        <label class="field-label" id="waste-ing-name-label">วัตถุดิบ: เมล็ดกาแฟ</label>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label" for="waste-qty-input">จำนวนวัตถุดิบที่คัดทิ้งสูญเสีย *</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="number" id="waste-qty-input" class="input" min="0.01" step="any" placeholder="0.00" required>
+          <span id="waste-unit-label" style="font-weight: 600; color: var(--ink-secondary);">กรัม</span>
+        </div>
+      </div>
+
+      <div id="waste-modal-error" class="field-error"></div>
+
+      <div class="form-actions" style="margin-top: var(--space-4);">
+        <button type="button" class="btn btn-primary" id="btn-confirm-waste" style="flex: 1;">บันทึกสูญเสียวัตถุดิบ</button>
+        <button type="button" class="btn btn-secondary" id="btn-close-waste">ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-backdrop" id="receipt-modal" role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title">
+    <div class="modal-card">
+      <div class="receipt-header">
+        <div class="receipt-logo-container" id="receipt-logo-wrap">
+          <span id="receipt-logo-placeholder">🏪</span>
+        </div>
+        <h3 class="receipt-title" id="receipt-shop-name">ทำรายการขายสำเร็จ</h3>
+        <p class="receipt-meta" id="receipt-datetime"></p>
+      </div>
+      <div class="receipt-list" id="receipt-items-list"></div>
+      <div class="receipt-totals" id="receipt-totals-box"></div>
+      <button type="button" class="btn btn-primary" id="close-receipt-btn" style="width: 100%;">
+        เริ่มรายการขายถัดไป
+      </button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // Multi-tenant States
+      let shops = []; // Array of [{ id, name, owner, phone, email, password, themeColor, products: [], ingredients: [], staff: [], salesHistory: [], wasteHistory: [], kitchenOrders: [] }]
+      let activeShopId = null;
+      let activeShop = null; // Shortcut pointer
+
+      // Active tenant states (points to activeShop data fields)
+      let products = [];
+      let ingredients = [];
+      let staffList = []; // [{ id, name, phone, role }]
+      let salesHistory = [];
+      let wasteHistory = [];
+      let kitchenOrders = [];
+
+      let cart = []; // [{ productId, qty }]
+      let activeView = 'pos';
+      let selectedCategory = 'ALL';
+      let posSearchQuery = '';
+      let stockSearchQuery = '';
+      let nextId = 1;
+      let nextIngId = 1;
+      let nextStaffId = 1;
+
+      // Active logged-in user in shop
+      let activeStaffId = null;
+
+      // Payment & Delivery Method State
+      let currentPaymentMethod = 'cash'; // 'cash' or 'qr'
+      let currentSalesChannel = 'walkin'; // 'walkin', 'grab', 'shopee', 'lineman'
+
+      // Simulated incoming delivery order
+      let pendingDeliveryOrder = null;
+
+      // Firebase Connection Status & Database references
+      let firebaseDb = null;
+
+      // Shop config shortcut
+      let shopConfig = {
+        name: 'ระบบ POS ขายหน้าร้าน & จัดการสต็อก',
+        logo: '',
+        qrCode: '',
+        themeColor: '#0f766e',
+        firebaseConfig: { apiKey: '', databaseURL: '', projectId: '', appId: '' }
+      };
+
+      // Load configurations, products and ingredients from localStorage defensively
+      try {
+        const cachedShops = localStorage.getItem('pos_shops_list');
+        if (cachedShops) {
+          shops = JSON.parse(cachedShops);
+        }
+        
+        const cachedActiveId = localStorage.getItem('pos_active_shop_id');
+        if (cachedActiveId) {
+          activeShopId = Number(cachedActiveId);
+          activeShop = shops.find(s => s.id === activeShopId);
+        }
+      } catch (e) {
+        console.warn('LocalStorage is not accessible or storage limit exceeded.', e);
+      }
+
+      // DOM Elements
+      const docTitle = document.getElementById('doc-title');
+      const authView = document.getElementById('auth-view');
+      const signupForm = document.getElementById('signup-form');
+      const signupError = document.getElementById('signup-error');
+      const shopSelectionGroup = document.getElementById('shop-selection-group');
+      const selectActiveShop = document.getElementById('select-active-shop');
+      const btnLoginShop = document.getElementById('btn-login-shop');
+      const loginPasswordInput = document.getElementById('login-password-input');
+      const authDivider = document.getElementById('auth-divider');
+
+      const tabPos = document.getElementById('tab-pos');
+      const tabKitchen = document.getElementById('tab-kitchen');
+      const tabStock = document.getElementById('tab-stock');
+      const tabSettings = document.getElementById('tab-settings');
+      const viewPos = document.getElementById('view-pos');
+      const viewKitchen = document.getElementById('view-kitchen');
+      const viewStock = document.getElementById('view-stock');
+      const viewSettings = document.getElementById('view-settings');
+
+      // Sub-tabs switcher (Back Office)
+      const subtabProducts = document.getElementById('subtab-products');
+      const subtabIngredients = document.getElementById('subtab-ingredients');
+      const subtabReports = document.getElementById('subtab-reports');
+      const panelProducts = document.getElementById('panel-products');
+      const panelIngredients = document.getElementById('panel-ingredients');
+      const panelReports = document.getElementById('panel-reports');
+
+      // Brand Elements
+      const headerTitle = document.getElementById('header-title');
+      const headerLogo = document.getElementById('header-logo');
+      const userDisplayName = document.getElementById('user-display-name');
+      const shopDisplayBranch = document.getElementById('shop-display-branch');
+      const userRoleSwitcher = document.getElementById('user-role-switcher');
+
+      // POS catalog elements
+      const posSearchInput = document.getElementById('pos-search');
+      const posCategoryBar = document.getElementById('pos-category-bar');
+      const posCatalogBody = document.getElementById('pos-catalog-body');
+      const goToAddStockBtn = document.getElementById('go-to-add-stock-btn');
+
+      // Cart elements
+      const cartItemsContainer = document.getElementById('cart-items-container');
+      const clearCartBtn = document.getElementById('clear-cart-btn');
+      const cartTotalAmount = document.getElementById('cart-total-amount');
+      const cashReceivedInput = document.getElementById('cash-received-input');
+      const changeAmountDisplay = document.getElementById('change-amount-display');
+      const checkoutError = document.getElementById('checkout-error');
+      const checkoutBtn = document.getElementById('checkout-btn');
+
+      // Stock backoffice elements
+      const stockForm = document.getElementById('stock-form');
+      const stockFormTitle = document.getElementById('stock-form-title');
+      const editProductIdInput = document.getElementById('edit-product-id');
+      const prodNameInput = document.getElementById('prod-name');
+      const prodSkuInput = document.getElementById('prod-sku');
+      const prodCategoryInput = document.getElementById('prod-category');
+      const prodPriceInput = document.getElementById('prod-price');
+      const prodStockType = document.getElementById('prod-stock-type');
+      const directStockGroup = document.getElementById('direct-stock-group');
+      const recipeIngredientsGroup = document.getElementById('recipe-ingredients-group');
+      const recipeIngredientsList = document.getElementById('recipe-ingredients-list');
+      const prodStockInput = document.getElementById('prod-stock');
+      const prodDirectCostInput = document.getElementById('prod-direct-cost');
+      const prodLowLimit = document.getElementById('prod-low-limit');
+      const prodImageFileInput = document.getElementById('prod-image-file');
+      const prodImageDataInput = document.getElementById('prod-image-data');
+      const prodImagePreview = document.getElementById('prod-image-preview');
+      const btnRemoveProdImage = document.getElementById('btn-remove-prod-image');
+      const imgPickerTrigger = document.getElementById('img-picker-trigger');
+      const stockFormError = document.getElementById('stock-form-error');
+      const saveProductBtn = document.getElementById('save-product-btn');
+      const cancelEditBtn = document.getElementById('cancel-edit-btn');
+      const stockSearchInput = document.getElementById('stock-search');
+      const stockTableContainer = document.getElementById('stock-table-container');
+
+      // Raw Ingredients form & list
+      const ingForm = document.getElementById('ing-form');
+      const ingFormTitle = document.getElementById('ing-form-title');
+      const editIngIdInput = document.getElementById('edit-ing-id');
+      const ingNameInput = document.getElementById('ing-name');
+      const ingStockInput = document.getElementById('ing-stock');
+      const ingUnitInput = document.getElementById('ing-unit');
+      const ingCostInput = document.getElementById('ing-cost');
+      const ingWasteRateInput = document.getElementById('ing-waste-rate');
+      const ingLowLimit = document.getElementById('ing-low-limit');
+      const ingFormError = document.getElementById('ing-form-error');
+      const saveIngBtn = document.getElementById('save-ing-btn');
+      const cancelEditIngBtn = document.getElementById('cancel-edit-ing-btn');
+      const ingredientsTableBody = document.getElementById('ingredients-table-body');
+
+      // Spoilage waste modal elements
+      const wasteSpoilageModal = document.getElementById('waste-spoilage-modal');
+      const wasteIngId = document.getElementById('waste-ing-id');
+      const wasteIngNameLabel = document.getElementById('waste-ing-name-label');
+      const wasteQtyInput = document.getElementById('waste-qty-input');
+      const wasteUnitLabel = document.getElementById('waste-unit-label');
+      const wasteModalError = document.getElementById('waste-modal-error');
+      const btnConfirmWaste = document.getElementById('btn-confirm-waste');
+      const btnCloseWaste = document.getElementById('btn-close-waste');
+
+      // Reports tables
+      const wasteReportTableBody = document.getElementById('waste-report-table-body');
+      const menuCogsTableBody = document.getElementById('menu-cogs-table-body');
+      const repRevenue = document.getElementById('rep-revenue');
+      const repCogs = document.getElementById('rep-cogs');
+      const repWasteCost = document.getElementById('rep-waste-cost');
+      const repProfit = document.getElementById('rep-profit');
+
+      // Settings elements
+      const settingsShopName = document.getElementById('settings-shop-name');
+      const settingsShopLogoFile = document.getElementById('settings-shop-logo-file');
+      const btnTriggerLogoFile = document.getElementById('btn-trigger-logo-file');
+      const btnRemoveLogo = document.getElementById('btn-remove-logo');
+      const settingsLogoPreviewContainer = document.getElementById('settings-logo-preview-container');
+      const settingsLogoPlaceholderIcon = document.getElementById('settings-logo-placeholder-icon');
+      const settingsLogoImgPreview = document.getElementById('settings-logo-img-preview');
+      const settingsCustomColor = document.getElementById('settings-custom-color');
+      const customColorHex = document.getElementById('custom-color-hex');
+      const presetsContainer = document.getElementById('presets-container');
+      const btnSaveSettings = document.getElementById('btn-save-settings');
+
+      // Settings QR elements
+      const settingsShopQrFile = document.getElementById('settings-shop-qr-file');
+      const btnTriggerQrFile = document.getElementById('btn-trigger-qr-file');
+      const btnRemoveQr = document.getElementById('btn-remove-qr');
+      const settingsQrImgPreview = document.getElementById('settings-qr-img-preview');
+      const settingsQrPlaceholderIcon = document.getElementById('settings-qr-placeholder-icon');
+
+      // Settings Firebase inputs
+      const fbApiKey = document.getElementById('fb-api-key');
+      const fbDbUrl = document.getElementById('fb-db-url');
+      const fbProjectId = document.getElementById('fb-project-id');
+      const fbAppId = document.getElementById('fb-app-id');
+      const btnConnectFirebase = document.getElementById('btn-connect-firebase');
+      const firebaseStatusLabel = document.getElementById('firebase-status-label');
+
+      // Staff forms & bindings
+      const staffForm = document.getElementById('staff-form');
+      const staffNameInput = document.getElementById('staff-name-input');
+      const staffPhoneInput = document.getElementById('staff-phone-input');
+      const staffRoleSelect = document.getElementById('staff-role-select');
+      const staffTableBody = document.getElementById('staff-table-body');
+      const accOwnerName = document.getElementById('acc-owner-name');
+      const accOwnerPhone = document.getElementById('acc-owner-phone');
+      const accOwnerEmail = document.getElementById('acc-owner-email');
+      const btnLogoutAuth = document.getElementById('btn-logout-auth');
+
+      // POS interactive payment and delivery elements
+      const paymentMethodSelector = document.getElementById('payment-method-selector');
+      const deliveryChannelSelector = document.getElementById('delivery-channel-selector');
+      const paymentQrContainer = document.getElementById('payment-qr-container');
+      const paymentCashContainer = document.getElementById('payment-cash-container');
+      const qrImageWrapper = document.getElementById('qr-image-wrapper');
+      const qrTextHeader = document.getElementById('qr-text-header');
+
+      // Delivery simulations elements
+      const btnSimGrab = document.getElementById('btn-sim-grab');
+      const btnSimShopee = document.getElementById('btn-sim-shopee');
+      const deliveryAlertBar = document.getElementById('delivery-alert-bar');
+      const incomingDeliveryIcon = document.getElementById('incoming-delivery-icon');
+      const incomingDeliveryTitle = document.getElementById('incoming-delivery-title');
+      const incomingDeliveryItems = document.getElementById('incoming-delivery-items');
+      const btnAcceptDelivery = document.getElementById('btn-accept-delivery');
+      const btnRejectDelivery = document.getElementById('btn-reject-delivery');
+
+      // Receipt elements
+      const receiptModal = document.getElementById('receipt-modal');
+      const receiptLogoWrap = document.getElementById('receipt-logo-wrap');
+      const receiptLogoPlaceholder = document.getElementById('receipt-logo-placeholder');
+      const receiptShopName = document.getElementById('receipt-shop-name');
+      const receiptDatetime = document.getElementById('receipt-datetime');
+      const receiptItemsList = document.getElementById('receipt-items-list');
+      const receiptTotalsBox = document.getElementById('receipt-totals-box');
+      const closeReceiptBtn = document.getElementById('close-receipt-btn');
+
+      // MULTI-TENANT INITIALIZATION & AUTHENTICATION FLOW
+      function initMultiTenant() {
+        if (shops.length > 0) {
+          // Display Quick login selectors
+          shopSelectionGroup.style.display = 'block';
+          authDivider.style.display = 'block';
+          selectActiveShop.innerHTML = shops.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${escapeHtml(s.owner)})</option>`).join('');
+        } else {
+          shopSelectionGroup.style.display = 'none';
+          authDivider.style.display = 'none';
+        }
+
+        if (activeShop) {
+          // Hide registration view, load current shop data
+          authView.style.display = 'none';
+          loadActiveShopData();
+        } else {
+          authView.style.display = 'flex';
+        }
+      }
+
+      // Login to selected shop branch with Password verification
+      btnLoginShop.addEventListener('click', () => {
+        const id = Number(selectActiveShop.value);
+        const shop = shops.find(s => s.id === id);
+        const inputPass = loginPasswordInput.value.trim();
+
+        if (!shop) return;
+
+        // Check if shop account has password and matches
+        if (shop.password && shop.password !== inputPass) {
+          alert('รหัสผ่านเข้าสาขาไม่ถูกต้อง กรุณาตรวจสอบและกรอกใหม่อีกครั้งค่ะ');
+          loginPasswordInput.focus();
+          return;
+        }
+
+        activeShopId = shop.id;
+        activeShop = shop;
+        localStorage.setItem('pos_active_shop_id', activeShopId);
+        authView.style.display = 'none';
+        loginPasswordInput.value = ''; // Reset input
+        loadActiveShopData();
+      });
+
+      // Submit Signup Form for a new branch store with password
+      signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const branchName = document.getElementById('reg-shop-name').value.trim();
+        const ownerName = document.getElementById('reg-owner-name').value.trim();
+        const phone = document.getElementById('reg-owner-phone').value.trim();
+        const email = document.getElementById('reg-owner-email').value.trim();
+        const passVal = document.getElementById('reg-password').value.trim();
+
+        if (!branchName || !ownerName || !phone || !email || !passVal) {
+          signupError.textContent = 'กรุณากรอกข้อมูลการสมัครและตั้งรหัสผ่านให้ครบถ้วนทุกช่อง';
+          return;
+        }
+
+        // Check if branch name is duplicate
+        if (shops.some(s => s.name.toLowerCase() === branchName.toLowerCase())) {
+          signupError.textContent = 'ชื่อร้านค้า/สาขานี้ถูกใช้ลงทะเบียนแล้ว';
+          return;
+        }
+
+        const newShopId = Date.now();
+        const newShopObj = {
+          id: newShopId,
+          name: branchName,
+          owner: ownerName,
+          phone: phone,
+          email: email,
+          password: passVal, // Secure shop database
+          logo: '',
+          qrCode: '',
+          themeColor: '#0f766e',
+          products: [
+            { id: 1, name: 'คาราเมลมัคคิอาโต้เย็น', sku: 'CF-001', category: 'เครื่องดื่ม', price: 65, stockType: 'recipe', stock: 0, directCost: 0, lowStockLimit: 5, recipe: [{ ingredientId: 1, amount: 18 }, { ingredientId: 2, amount: 120 }, { ingredientId: 3, amount: 1 }, { ingredientId: 4, amount: 15 }], image: '' },
+            { id: 2, name: 'เอสเพรสโซ่เย็นเข้มข้น', sku: 'CF-002', category: 'เครื่องดื่ม', price: 50, stockType: 'recipe', stock: 0, directCost: 0, lowStockLimit: 5, recipe: [{ ingredientId: 1, amount: 20 }, { ingredientId: 2, amount: 60 }, { ingredientId: 3, amount: 1 }], image: '' },
+            { id: 3, name: 'เค้กช็อกโกแลตฟัดจ์', sku: 'BK-001', category: 'เบเกอรี่', price: 85, stockType: 'direct', stock: 12, directCost: 35, lowStockLimit: 5, recipe: [], image: '' }
+          ],
+          ingredients: [
+            { id: 1, name: 'เมล็ดกาแฟอาราบิก้า (กรัม)', stock: 500, unit: 'กรัม', cost: 0.6, wasteRate: 5, totalWasted: 0, lowStockLimit: 100 },
+            { id: 2, name: 'นมสดพาสเจอร์ไรส์ (มล.)', stock: 1500, unit: 'มล.', cost: 0.08, wasteRate: 2, totalWasted: 0, lowStockLimit: 200 },
+            { id: 3, name: 'แก้วพลาสติก PET 16oz (ใบ)', stock: 60, unit: 'ใบ', cost: 1.5, wasteRate: 0, totalWasted: 0, lowStockLimit: 10 },
+            { id: 4, name: 'ซอสคาราเมลเข้มข้น (มล.)', stock: 400, unit: 'มล.', cost: 0.15, wasteRate: 1, totalWasted: 0, lowStockLimit: 50 }
+          ],
+          staff: [
+            { id: 1, name: ownerName, phone: phone, role: 'owner' }
+          ],
+          salesHistory: [],
+          wasteHistory: [],
+          kitchenOrders: []
+        };
+
+        shops.push(newShopObj);
+        activeShopId = newShopId;
+        activeShop = newShopObj;
+
+        // Save immediately
+        localStorage.setItem('pos_shops_list', JSON.stringify(shops));
+        localStorage.setItem('pos_active_shop_id', activeShopId);
+
+        signupForm.reset();
+        signupError.textContent = '';
+        authView.style.display = 'none';
+
+        loadActiveShopData();
+      });
+
+      // Load specific shop data variables
+      function loadActiveShopData() {
+        if (!activeShop) return;
+
+        // Bind Active fields
+        products = activeShop.products || [];
+        ingredients = activeShop.ingredients || [];
+        staffList = activeShop.staff || [];
+        salesHistory = activeShop.salesHistory || [];
+        wasteHistory = activeShop.wasteHistory || [];
+        kitchenOrders = activeShop.kitchenOrders || [];
+
+        shopConfig.name = activeShop.name;
+        shopConfig.logo = activeShop.logo || '';
+        shopConfig.qrCode = activeShop.qrCode || '';
+        shopConfig.themeColor = activeShop.themeColor || '#0f766e';
+        shopConfig.firebaseConfig = activeShop.firebaseConfig || { apiKey: '', databaseURL: '', projectId: '', appId: '' };
+
+        // ID counters
+        if (products.length > 0) nextId = Math.max(...products.map(p => p.id)) + 1;
+        else nextId = 1;
+
+        if (ingredients.length > 0) nextIngId = Math.max(...ingredients.map(i => i.id)) + 1;
+        else nextIngId = 1;
+
+        if (staffList.length > 0) nextStaffId = Math.max(...staffList.map(s => s.id)) + 1;
+        else nextStaffId = 1;
+
+        // Set owner view details
+        const ownerStaff = staffList.find(s => s.role === 'owner') || { name: activeShop.owner, phone: activeShop.phone };
+        accOwnerName.textContent = ownerStaff.name;
+        accOwnerPhone.textContent = ownerStaff.phone;
+        accOwnerEmail.textContent = activeShop.email;
+
+        // Render staff dropdown switcher
+        renderStaffRolesDropdown();
+
+        // Update display
+        updateBrandUI();
+        renderAll();
+
+        // If firebase config is saved, sync
+        if (shopConfig.firebaseConfig && shopConfig.firebaseConfig.apiKey) {
+          loadAndConnectFirebase(shopConfig.firebaseConfig, false);
+        }
+      }
+
+      // Logout and Switch Branch
+      btnLogoutAuth.addEventListener('click', () => {
+        saveState();
+        activeShopId = null;
+        activeShop = null;
+        localStorage.removeItem('pos_active_shop_id');
+        
+        // Reset view panels
+        tabPos.classList.add('active');
+        tabKitchen.classList.remove('active');
+        tabStock.classList.remove('active');
+        tabSettings.classList.remove('active');
+        viewPos.classList.add('active');
+        viewKitchen.classList.remove('active');
+        viewStock.classList.remove('active');
+        viewSettings.classList.remove('active');
+
+        // reload auth view
+        initMultiTenant();
+      });
+
+      // Staff switching logic
+      function renderStaffRolesDropdown() {
+        if (staffList.length === 0) return;
+
+        let html = '';
+        staffList.forEach(s => {
+          const roleLabel = s.role === 'owner' ? 'เจ้าของร้าน (Owner)' : (s.role === 'manager' ? 'ผู้จัดการ (Manager)' : (s.role === 'cashier' ? 'พนักงานขาย' : 'ในครัว'));
+          html += `<option value="${s.id}">${escapeHtml(s.name)} (${roleLabel})</option>`;
+        });
+
+        userRoleSwitcher.innerHTML = html;
+        
+        // Set first staff as active
+        if (!activeStaffId && staffList.length > 0) {
+          activeStaffId = staffList[0].id;
+        }
+        userRoleSwitcher.value = activeStaffId;
+        updateActiveUserDisplay();
+      }
+
+      function updateActiveUserDisplay() {
+        const staffObj = staffList.find(s => s.id === Number(userRoleSwitcher.value));
+        if (staffObj) {
+          activeStaffId = staffObj.id;
+          const roleLabel = staffObj.role === 'owner' ? 'เจ้าของร้าน (Owner)' : (staffObj.role === 'manager' ? 'ผู้จัดการ (Manager)' : (staffObj.role === 'cashier' ? 'พนักงานขาย' : 'ในครัว'));
+          userDisplayName.textContent = staffObj.name;
+          shopDisplayBranch.textContent = `${shopConfig.name} (${roleLabel})`;
+        }
+      }
+
+      userRoleSwitcher.addEventListener('change', () => {
+        updateActiveUserDisplay();
+      });
+
+      // Form submission to Register a new Staff employee
+      staffForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameVal = staffNameInput.value.trim();
+        const phoneVal = staffPhoneInput.value.trim();
+        const roleVal = staffRoleSelect.value;
+
+        if (!nameVal) {
+          alert('กรุณากรอกชื่อพนักงาน');
+          staffNameInput.focus();
+          return;
+        }
+
+        staffList.push({
+          id: nextStaffId++,
+          name: nameVal,
+          phone: phoneVal,
+          role: roleVal
+        });
+
+        staffNameInput.value = '';
+        staffPhoneInput.value = '';
+        staffRoleSelect.value = 'cashier';
+
+        saveState();
+        renderStaffTable();
+        renderStaffRolesDropdown();
+      });
+
+      function renderStaffTable() {
+        if (staffList.length === 0) {
+          staffTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--muted); padding:16px;">ยังไม่มีทีมงานพนักงาน ลงทะเบียนด้านซ้ายเพื่อเพิ่มรายชื่อนะคะ</td></tr>`;
+          return;
+        }
+
+        let html = '';
+        staffList.forEach(s => {
+          const roleLabel = s.role === 'owner' ? 'เจ้าของร้าน (Owner)' : (s.role === 'manager' ? 'ผู้จัดการ (Manager)' : (s.role === 'cashier' ? 'พนักงานขาย (Cashier)' : 'ในครัว (Kitchen)'));
+          const isOwner = s.role === 'owner';
+          html += `
+            <tr>
+              <td><strong>${escapeHtml(s.name)}</strong></td>
+              <td><span class="product-cat-tag">${roleLabel}</span></td>
+              <td>${escapeHtml(s.phone || '-')}</td>
+              <td class="num">
+                <button type="button" class="btn btn-danger-ghost btn-sm" data-delete-staff="${s.id}" ${isOwner ? 'disabled' : ''}>ลบออก</button>
+              </td>
+            </tr>
+          `;
+        });
+        staffTableBody.innerHTML = html;
+      }
+
+      staffTableBody.addEventListener('click', (e) => {
+        const delBtn = e.target.closest('[data-delete-staff]');
+        if (!delBtn || delBtn.disabled) return;
+        const id = Number(delBtn.getAttribute('data-delete-staff'));
+        staffList = staffList.filter(s => s.id !== id);
+        
+        if (activeStaffId === id) activeStaffId = null;
+        
+        saveState();
+        renderStaffTable();
+        renderStaffRolesDropdown();
+      });
+
+      // Dynamic save interception
+      function saveState() {
+        if (activeShop) {
+          activeShop.products = products;
+          activeShop.ingredients = ingredients;
+          activeShop.salesHistory = salesHistory;
+          activeShop.wasteHistory = wasteHistory;
+          activeShop.kitchenOrders = kitchenOrders;
+          activeShop.staff = staffList;
+          activeShop.name = shopConfig.name;
+          activeShop.logo = shopConfig.logo;
+          activeShop.qrCode = shopConfig.qrCode;
+          activeShop.themeColor = shopConfig.themeColor;
+          activeShop.firebaseConfig = shopConfig.firebaseConfig;
+        }
+        try {
+          localStorage.setItem('pos_shops_list', JSON.stringify(shops));
+          localStorage.setItem('pos_active_shop_id', activeShopId);
+        } catch (e) {
+          console.warn('LocalStorage save failed', e);
+        }
+
+        // Realtime sync to Firebase Database (if initialized and online)
+        if (firebaseDb && activeShopId) {
+          try {
+            firebaseDb.ref(`pos_data/${activeShopId}`).set(activeShop);
+            console.log('✔ สำรองข้อมูลสาขาขึ้น Firebase Database สำเร็จ!');
+          } catch (err) {
+            console.error('Firebase Sync Error: ', err);
+          }
+        }
+      }
+
+      // Categories Processing
+      function getCategories() {
+        const set = new Set();
+        products.forEach(p => {
+          if (p.category && p.category.trim()) {
+            set.add(p.category.trim());
+          }
+        });
+        return Array.from(set);
+      }
+
+      function renderCategories() {
+        const categories = getCategories();
+        if (selectedCategory !== 'ALL' && !categories.includes(selectedCategory)) {
+          selectedCategory = 'ALL';
+        }
+
+        let html = `<button type="button" class="cat-pill ${selectedCategory === 'ALL' ? 'active' : ''}" data-cat="ALL">ทั้งหมด</button>`;
+        categories.forEach(cat => {
+          const isActive = selectedCategory === cat ? 'active' : '';
+          html += `<button type="button" class="cat-pill ${isActive}" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)}</button>`;
+        });
+        posCategoryBar.innerHTML = html;
+      }
+
+      posCategoryBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.cat-pill');
+        if (!btn) return;
+        selectedCategory = btn.getAttribute('data-cat');
+        renderCategories();
+        renderPosCatalog();
+      });
+
+      posSearchInput.addEventListener('input', (e) => {
+        posSearchQuery = e.target.value.trim().toLowerCase();
+        renderPosCatalog();
+      });
+
+      stockSearchInput.addEventListener('input', (e) => {
+        stockSearchQuery = e.target.value.trim().toLowerCase();
+        renderStockTable();
+      });
+
+      // Handle Product Image File Loading
+      imgPickerTrigger.addEventListener('click', (e) => {
+        if (e.target.closest('#btn-remove-prod-image')) return;
+        prodImageFileInput.click();
+      });
+
+      prodImageFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const base64String = event.target.result;
+          prodImageDataInput.value = base64String;
+          prodImagePreview.src = base64String;
+          prodImagePreview.style.display = 'block';
+          btnRemoveProdImage.style.display = 'inline-flex';
+        };
+        reader.readAsDataURL(file);
+      });
+
+      btnRemoveProdImage.addEventListener('click', (e) => {
+        e.stopPropagation();
+        prodImageFileInput.value = '';
+        prodImageDataInput.value = '';
+        prodImagePreview.src = '';
+        prodImagePreview.style.display = 'none';
+        btnRemoveProdImage.style.display = 'none';
+      });
+
+      // Handle Settings Logo File Loading
+      btnTriggerLogoFile.addEventListener('click', () => {
+        settingsShopLogoFile.click();
+      });
+
+      settingsShopLogoFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const base64String = event.target.result;
+          settingsLogoImgPreview.src = base64String;
+          settingsLogoImgPreview.style.display = 'block';
+          settingsLogoPlaceholderIcon.style.display = 'none';
+          btnRemoveLogo.style.display = 'inline-flex';
+        };
+        reader.readAsDataURL(file);
+      });
+
+      btnRemoveLogo.addEventListener('click', () => {
+        settingsShopLogoFile.value = '';
+        settingsLogoImgPreview.src = '';
+        settingsLogoImgPreview.style.display = 'none';
+        settingsLogoPlaceholderIcon.style.display = 'block';
+        btnRemoveLogo.style.display = 'none';
+      });
+
+      // Render POS Product Grid (Catalog)
+      function renderPosCatalog() {
+        if (products.length === 0) {
+          posCatalogBody.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                </svg>
+              </div>
+              <h3 class="empty-title">ยังไม่มีสินค้าในระบบ</h3>
+              <p class="empty-desc">เริ่มต้นใช้งานด้วยการเพิ่มรายการสินค้า อัปโหลดรูปภาพ และกำหนดจำนวนวัตถุดิบหลังร้าน</p>
+              <button type="button" class="btn btn-primary" id="empty-add-product-btn">+ เพิ่มสินค้าชิ้นแรก</button>
+            </div>
+          `;
+          const emptyBtn = document.getElementById('empty-add-product-btn');
+          if (emptyBtn) {
+            emptyBtn.addEventListener('click', () => {
+              switchView('stock');
+              prodNameInput.focus();
+            });
+          }
+          return;
+        }
+
+        const filtered = products.filter(p => {
+          const matchCat = selectedCategory === 'ALL' || p.category === selectedCategory;
+          const matchQuery = !posSearchQuery ||
+            p.name.toLowerCase().includes(posSearchQuery) ||
+            (p.sku && p.sku.toLowerCase().includes(posSearchQuery)) ||
+            (p.category && p.category.toLowerCase().includes(posSearchQuery));
+          return matchCat && matchQuery;
+        });
+
+        if (filtered.length === 0) {
+          posCatalogBody.innerHTML = `
+            <div class="empty-state">
+              <h3 class="empty-title">ไม่พบสินค้าที่ค้นหา</h3>
+              <p class="empty-desc">ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่ "ทั้งหมด"</p>
+            </div>
+          `;
+          return;
+        }
+
+        let gridHtml = '<div class="product-grid">';
+        filtered.forEach(p => {
+          const calculatedStock = getCalculatedStock(p);
+          const inCartItem = cart.find(c => c.productId === p.id);
+          const inCartQty = inCartItem ? inCartItem.qty : 0;
+          const remainingToSelect = calculatedStock - inCartQty;
+          const isOut = calculatedStock <= 0 || remainingToSelect <= 0;
+
+          // Check if direct stock is low based on its custom limit
+          let isLow = false;
+          if (p.stockType === 'direct') {
+            isLow = p.stock <= (p.lowStockLimit || 5);
+          } else {
+            // If recipe-based, check if any ingredient in recipe is low based on its custom limit
+            if (p.recipe) {
+              isLow = p.recipe.some(r => {
+                const ing = ingredients.find(i => i.id === r.ingredientId);
+                return ing && ing.stock <= (ing.lowStockLimit || 100);
+              });
+            }
+          }
+
+          let stockLabel = p.stockType === 'recipe' ? `จัดเตรียมได้ ${calculatedStock}` : `คงเหลือ ${calculatedStock}`;
+          let stockClass = '';
+          if (calculatedStock <= 0) {
+            stockLabel = p.stockType === 'recipe' ? 'วัตถุดิบหมด' : 'สินค้าหมด';
+            stockClass = 'out';
+          } else if (isLow) {
+            stockClass = 'low';
+            stockLabel += ' ⚠️';
+          }
+
+          gridHtml += `
+            <button type="button" class="product-card" data-add-id="${p.id}" ${isOut ? 'disabled' : ''}>
+              <div class="product-image-container">
+                ${p.image 
+                  ? `<img class="product-image-img" src="${p.image}" alt="${escapeHtml(p.name)}">`
+                  : `<span class="product-image-placeholder">📦</span>`
+                }
+              </div>
+              <div class="product-info-container">
+                <div>
+                  <div class="product-top">
+                    <span class="product-cat-tag">${escapeHtml(p.category || 'ทั่วไป')}</span>
+                    ${p.sku ? `<span class="product-sku" title="${escapeHtml(p.sku)}">${escapeHtml(p.sku)}</span>` : ''}
+                  </div>
+                  <div class="product-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</div>
+                </div>
+                <div class="product-bottom">
+                  <span class="product-price">${formatCurrency(p.price)}</span>
+                  <span class="stock-text ${stockClass}">${stockLabel}</span>
+                </div>
+              </div>
+            </button>
+          `;
+        });
+        gridHtml += '</div>';
+        posCatalogBody.innerHTML = gridHtml;
+      }
+
+      posCatalogBody.addEventListener('click', (e) => {
+        const card = e.target.closest('[data-add-id]');
+        if (!card || card.disabled) return;
+        const prodId = Number(card.getAttribute('data-add-id'));
+        addToCart(prodId);
+      });
+
+      // Cart Core Functions
+      function addToCart(productId) {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+        const calculatedStock = getCalculatedStock(product);
+        if (calculatedStock <= 0) return;
+
+        const existing = cart.find(c => c.productId === productId);
+        if (existing) {
+          if (existing.qty < calculatedStock) {
+            existing.qty += 1;
+          }
+        } else {
+          cart.push({ productId, qty: 1 });
+        }
+        checkoutError.textContent = '';
+        renderPosCatalog();
+        renderCart();
+      }
+
+      // Update basket item qty
+      function updateCartQty(productId, delta) {
+        const itemIndex = cart.findIndex(c => c.productId === productId);
+        if (itemIndex === -1) return;
+
+        const product = products.find(p => p.id === productId);
+        if (!product) {
+          cart.splice(itemIndex, 1);
+        } else {
+          const calculatedStock = getCalculatedStock(product);
+          const newQty = cart[itemIndex].qty + delta;
+          if (newQty <= 0) {
+            cart.splice(itemIndex, 1);
+          } else if (newQty <= calculatedStock) {
+            cart[itemIndex].qty = newQty;
+          }
+        }
+        checkoutError.textContent = '';
+        renderPosCatalog();
+        renderCart();
+      }
+
+      function getCartTotal() {
+        return cart.reduce((sum, item) => {
+          const prod = products.find(p => p.id === item.productId);
+          return prod ? sum + (prod.price * item.qty) : sum;
+        }, 0);
+      }
+
+      // Dynamic toggle for Payment Method Selector
+      paymentMethodSelector.addEventListener('click', (e) => {
+        const tab = e.target.closest('.payment-tab');
+        if (!tab) return;
+        
+        document.querySelectorAll('#payment-method-selector .payment-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        currentPaymentMethod = tab.getAttribute('data-method');
+        checkoutError.textContent = '';
+        
+        if (currentPaymentMethod === 'qr') {
+          paymentQrContainer.style.display = 'block';
+          paymentCashContainer.style.display = 'none';
+          
+          // Render shop QR
+          const total = getCartTotal();
+          qrTextHeader.textContent = `ยอดโอนสแกนจ่าย: ${formatCurrency(total)}`;
+          if (shopConfig.qrCode) {
+            qrImageWrapper.innerHTML = `<img src="${shopConfig.qrCode}" class="qr-img" alt="Shop QR Code">`;
+          } else {
+            // Simulated PromptPay-style beautiful mockup
+            qrImageWrapper.innerHTML = `
+              <div style="background: #003666; border-radius: 8px; padding: 12px; max-width: 160px; margin: 0 auto; color: white;">
+                <div style="font-weight: 700; font-size: 11px; margin-bottom: 4px; letter-spacing: 0.5px;">PROMPTPAY QR</div>
+                <div style="background: white; padding: 6px; border-radius: 4px;">
+                  <img src="about:invalid#zPythonSafez" style="width: 100%; display: block;" alt="Mockup QR">
+                </div>
+                <div style="font-size: 9px; margin-top: 6px; opacity: 0.85;">(คิวอาร์จำลองอัตโนมัติ)</div>
+              </div>
+              <p style="font-size: 10px; color: var(--danger); font-weight: 600; margin-top: 6px; margin-bottom: 0;">* อัปโหลดรูป QR รับเงินของร้านคุณได้ในเมนูตั้งค่า</p>
+            `;
+          }
+        } else {
+          paymentQrContainer.style.display = 'none';
+          paymentCashContainer.style.display = 'grid';
+          cashReceivedInput.focus();
+        }
+      });
+
+      // Delivery channel selector
+      deliveryChannelSelector.addEventListener('click', (e) => {
+        const tab = e.target.closest('.delivery-tab');
+        if (!tab) return;
+        
+        document.querySelectorAll('#delivery-channel-selector .delivery-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        currentSalesChannel = tab.getAttribute('data-channel');
+      });
+
+      // Simulated Delivery Order triggers
+      function displayIncomingDelivery(channel, itemsList, details) {
+        pendingDeliveryOrder = {
+          channel: channel,
+          items: itemsList // Array of { productId, qty }
+        };
+
+        incomingDeliveryTitle.innerHTML = `ออเดอร์ใหม่เข้าจาก <strong>${channel.toUpperCase()}</strong>!`;
+        
+        // Build description text
+        const textNames = itemsList.map(item => {
+          const prod = products.find(p => p.id === item.productId);
+          return prod ? `${prod.name} x${item.qty}` : 'สินค้าไร้ชื่อ';
+        }).join(', ');
+
+        incomingDeliveryItems.textContent = textNames;
+
+        if (channel === 'grab') {
+          incomingDeliveryIcon.textContent = '🟢';
+          deliveryAlertBar.style.borderColors = 'var(--brand)';
+        } else {
+          incomingDeliveryIcon.textContent = '🟠';
+          deliveryAlertBar.style.borderColors = 'var(--warning)';
+        }
+
+        deliveryAlertBar.style.display = 'flex';
+        // Auto scroll to top of page to notice the delivery
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      btnSimGrab.addEventListener('click', () => {
+        if (products.length === 0) {
+          alert('กรุณาเพิ่มรายการสินค้าก่อนสุ่มออเดอร์นะคะ!');
+          return;
+        }
+        // Choose random product
+        const randProduct = products[Math.floor(Math.random() * products.length)];
+        displayIncomingDelivery('grab', [{ productId: randProduct.id, qty: 1 }], {});
+      });
+
+      btnSimShopee.addEventListener('click', () => {
+        if (products.length === 0) {
+          alert('กรุณาเพิ่มรายการสินค้าก่อนสุ่มออเดอร์นะคะ!');
+          return;
+        }
+        // Choose random product
+        const randProduct = products[Math.floor(Math.random() * products.length)];
+        displayIncomingDelivery('shopee', [{ productId: randProduct.id, qty: 1 }], {});
+      });
+
+      // Accept or decline delivery
+      btnAcceptDelivery.addEventListener('click', () => {
+        if (!pendingDeliveryOrder) return;
+        
+        // Set channel in the selector
+        document.querySelectorAll('#delivery-channel-selector .delivery-tab').forEach(t => {
+          t.classList.remove('active');
+          if (t.getAttribute('data-channel') === pendingDeliveryOrder.channel) {
+            t.classList.add('active');
+          }
+        });
+        currentSalesChannel = pendingDeliveryOrder.channel;
+
+        // Force payment method to QR (typical for delivery apps)
+        document.querySelectorAll('#payment-method-selector .payment-tab').forEach(t => {
+          t.classList.remove('active');
+          if (t.getAttribute('data-method') === 'qr') {
+            t.classList.add('active');
+          }
+        });
+        currentPaymentMethod = 'qr';
+
+        // Add item to cart
+        cart = []; // clear currentWalkin cart for delivery single checkout
+        pendingDeliveryOrder.items.forEach(item => {
+          addToCart(item.productId);
+          const cartItem = cart.find(c => c.productId === item.productId);
+          if (cartItem) cartItem.qty = item.qty;
+        });
+
+        // Hide notice
+        deliveryAlertBar.style.display = 'none';
+        pendingDeliveryOrder = null;
+
+        renderCart();
+        renderPosCatalog();
+
+        // Trigger payment layout updates
+        const total = getCartTotal();
+        paymentQrContainer.style.display = 'block';
+        paymentCashContainer.style.display = 'none';
+        qrTextHeader.textContent = `ยอดสแกนจ่ายเดลิเวอรี่: ${formatCurrency(total)}`;
+      });
+
+      btnRejectDelivery.addEventListener('click', () => {
+        deliveryAlertBar.style.display = 'none';
+        pendingDeliveryOrder = null;
+      });
+
+      function renderCart() {
+        // Clean up cart defensively
+        cart = cart.filter(item => {
+          const prod = products.find(p => p.id === item.productId);
+          if (!prod) return false;
+          const calculatedStock = getCalculatedStock(prod);
+          if (calculatedStock <= 0) return false;
+          if (item.qty > calculatedStock) item.qty = calculatedStock;
+          return true;
+        });
+
+        if (cart.length === 0) {
+          cartItemsContainer.innerHTML = `
+            <div class="empty-state" style="padding: 36px 12px;">
+              <p class="empty-title" style="font-size: 14px;">ยังไม่มีสินค้าในรายการขาย</p>
+              <p class="empty-desc" style="margin-bottom: 0;">คลิกเลือกสินค้าจากฝั่งซ้ายเพื่อนำเข้าสู่รายการคิดเงิน</p>
+            </div>
+          `;
+          clearCartBtn.disabled = true;
+          checkoutBtn.disabled = true;
+          cartTotalAmount.textContent = formatCurrency(0);
+          updateChangeCalculation();
+          return;
+        }
+
+        clearCartBtn.disabled = false;
+        checkoutBtn.disabled = false;
+
+        let html = '';
+        cart.forEach(item => {
+          const prod = products.find(p => p.id === item.productId);
+          if (!prod) return;
+          const subtotal = prod.price * item.qty;
+          const calculatedStock = getCalculatedStock(prod);
+          const maxReached = item.qty >= calculatedStock;
+
+          html += `
+            <div class="cart-item">
+              <div class="cart-item-thumbnail">
+                ${prod.image 
+                  ? `<img src="${prod.image}" alt="${escapeHtml(prod.name)}">`
+                  : `📦`
+                }
+              </div>
+              <div class="cart-item-info">
+                <p class="cart-item-name">${escapeHtml(prod.name)}</p>
+                <span class="cart-item-meta">${formatCurrency(prod.price)} / ชิ้น</span>
+              </div>
+              <div class="qty-controls">
+                <button type="button" class="qty-btn" data-qty-id="${prod.id}" data-delta="-1" aria-label="ลดจำนวน">-</button>
+                <span class="qty-value">${item.qty}</span>
+                <button type="button" class="qty-btn" data-qty-id="${prod.id}" data-delta="1" ${maxReached ? 'disabled' : ''} aria-label="เพิ่มจำนวน">+</button>
+              </div>
+              <div class="cart-item-subtotal">${formatCurrency(subtotal)}</div>
+            </div>
+          `;
+        });
+
+        cartItemsContainer.innerHTML = html;
+        cartTotalAmount.textContent = formatCurrency(getCartTotal());
+        updateChangeCalculation();
+      }
+
+      cartItemsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-qty-id]');
+        if (!btn || btn.disabled) return;
+        const id = Number(btn.getAttribute('data-qty-id'));
+        const delta = Number(btn.getAttribute('data-delta'));
+        updateCartQty(id, delta);
+      });
+
+      clearCartBtn.addEventListener('click', () => {
+        cart = [];
+        cashReceivedInput.value = '';
+        checkoutError.textContent = '';
+        renderPosCatalog();
+        renderCart();
+      });
+
+      function updateChangeCalculation() {
+        const total = getCartTotal();
+        const rawCash = cashReceivedInput.value.trim();
+        if (!rawCash || total === 0) {
+          changeAmountDisplay.textContent = formatCurrency(0);
+          return;
+        }
+        const cash = Number(rawCash);
+        if (isNaN(cash) || cash < total) {
+          changeAmountDisplay.textContent = formatCurrency(0);
+        } else {
+          changeAmountDisplay.textContent = formatCurrency(cash - total);
+        }
+      }
+
+      cashReceivedInput.addEventListener('input', () => {
+        checkoutError.textContent = '';
+        updateChangeCalculation();
+      });
+
+      // Checkout Processing (Deducting Product stock OR Raw Ingredients stock dynamically and sending order to Kitchen)
+      checkoutBtn.addEventListener('click', () => {
+        if (cart.length === 0) return;
+
+        const total = getCartTotal();
+        let cash = total; // Default is QR/exact payment
+
+        if (currentPaymentMethod === 'cash') {
+          const rawCash = cashReceivedInput.value.trim();
+          cash = rawCash === '' ? total : Number(rawCash);
+
+          if (isNaN(cash) || cash < total) {
+            checkoutError.textContent = 'จำนวนเงินสดที่รับน้อยกว่ายอดสุทธิ';
+            cashReceivedInput.focus();
+            return;
+          }
+        }
+
+        const change = cash - total;
+        const soldLines = [];
+        let totalEstimatedCost = 0;
+
+        // Process deduction & record transaction details
+        cart.forEach(item => {
+          const prod = products.find(p => p.id === item.productId);
+          if (prod) {
+            const unitCost = getProductRecipeCost(prod);
+            const lineCost = unitCost * item.qty;
+            totalEstimatedCost += lineCost;
+
+            if (prod.stockType === 'direct') {
+              // Deduct direct product stock
+              prod.stock = Math.max(0, prod.stock - item.qty);
+            } else if (prod.stockType === 'recipe' && prod.recipe) {
+              // Deduct ingredients raw stock based on formulation recipe
+              prod.recipe.forEach(recipeItem => {
+                const ing = ingredients.find(i => i.id === recipeItem.ingredientId);
+                if (ing) {
+                  const totalUsed = recipeItem.amount * item.qty;
+                  ing.stock = Math.max(0, ing.stock - totalUsed);
+                }
+              });
+            }
+
+            soldLines.push({
+              productId: prod.id,
+              name: prod.name,
+              qty: item.qty,
+              price: prod.price,
+              cost: unitCost,
+              subtotal: prod.price * item.qty
+            });
+          }
+        });
+
+        // 1. Record Sale History
+        const orderId = Date.now();
+        const orderNo = "ORD-" + (salesHistory.length + 1001);
+        salesHistory.push({
+          id: orderId,
+          orderNo: orderNo,
+          total: total,
+          totalCost: totalEstimatedCost,
+          items: soldLines,
+          datetime: new Date().toISOString(),
+          channel: currentSalesChannel,
+          payment: currentPaymentMethod
+        });
+
+        // 2. Add queue to Kitchen Screen!
+        kitchenOrders.push({
+          id: orderId,
+          orderNo: orderNo,
+          items: soldLines.map(line => ({ name: line.name, qty: line.qty, done: false })),
+          datetime: new Date().toISOString(),
+          channel: currentSalesChannel,
+          status: 'pending'
+        });
+
+        // Update Receipt Modal shop profile
+        receiptShopName.textContent = shopConfig.name;
+        if (shopConfig.logo) {
+          receiptLogoWrap.innerHTML = `<img src="${shopConfig.logo}" alt="Store Logo">`;
+          receiptLogoWrap.style.background = 'transparent';
+        } else {
+          receiptLogoWrap.innerHTML = `🏪`;
+          receiptLogoWrap.style.background = 'var(--surface-subtle)';
+        }
+
+        const now = new Date();
+        receiptDatetime.textContent = now.toLocaleString('th-TH', {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        });
+
+        receiptItemsList.innerHTML = soldLines.map(line => `
+          <div class="receipt-line">
+            <span>${escapeHtml(line.name)} x ${line.qty}</span>
+            <span>${formatCurrency(line.subtotal)}</span>
+          </div>
+        `).join('');
+
+        // Map delivery channels into Thai words
+        const channelsMap = {
+          'walkin': 'หน้าร้าน (Walk-in)',
+          'grab': 'GrabFood (เดลิเวอรี่)',
+          'shopee': 'ShopeeFood (เดลิเวอรี่)',
+          'lineman': 'LINE MAN (เดลิเวอรี่)'
+        };
+
+        const paymentMethodLabel = currentPaymentMethod === 'cash' ? 'เงินสด' : 'QR โอนเงิน';
+        const salesChannelLabel = channelsMap[currentSalesChannel] || 'หน้าร้าน';
+
+        receiptTotalsBox.innerHTML = `
+          <div class="receipt-line" style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">
+            <span>คิวสั่งซื้อ:</span>
+            <strong>${orderNo}</strong>
+          </div>
+          <div class="receipt-line" style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">
+            <span>ช่องทางขาย:</span>
+            <strong>${salesChannelLabel}</strong>
+          </div>
+          <div class="receipt-line" style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">
+            <span>วิธีชำระเงิน:</span>
+            <strong>${paymentMethodLabel}</strong>
+          </div>
+          <div class="receipt-line grand" style="border-top: 1px dashed var(--border-strong); padding-top: var(--space-2);">
+            <span>ยอดรวมสุทธิ</span>
+            <span>${formatCurrency(total)}</span>
+          </div>
+          <div class="receipt-line">
+            <span>${currentPaymentMethod === 'cash' ? 'รับเงินสด' : 'ชำระผ่าน QR'}</span>
+            <span>${formatCurrency(cash)}</span>
+          </div>
+          <div class="receipt-line">
+            <span>เงินทอน</span>
+            <span>${formatCurrency(change)}</span>
+          </div>
+        `;
+
+        receiptModal.classList.add('open');
+
+        // Reset cart, cash values and channel selector back to walkin
+        cart = [];
+        cashReceivedInput.value = '';
+        checkoutError.textContent = '';
+        
+        currentSalesChannel = 'walkin';
+        document.querySelectorAll('#delivery-channel-selector .delivery-tab').forEach(t => {
+          t.classList.remove('active');
+          if (t.getAttribute('data-channel') === 'walkin') t.classList.add('active');
+        });
+
+        saveState(); // Save state to storage
+        renderAll();
+      });
+
+      closeReceiptBtn.addEventListener('click', () => {
+        receiptModal.classList.remove('open');
+      });
+
+      receiptModal.addEventListener('click', (e) => {
+        if (e.target === receiptModal) {
+          receiptModal.classList.remove('open');
+        }
+      });
+
+      // Kitchen Screen Render
+      function renderKitchenQueue() {
+        const activeTickets = kitchenOrders.filter(o => o.status === 'pending');
+        kitchenCountText.textContent = `คิวค้างส่ง: ${activeTickets.length} ออเดอร์`;
+
+        if (activeTickets.length === 0) {
+          kitchenOrdersContainer.innerHTML = `
+            <div class="card" style="grid-column: 1 / -1; padding: var(--space-8); text-align:center; color: var(--muted);">
+              <span style="font-size: 48px; display:block; margin-bottom: 12px;">🍳</span>
+              <strong>ยังไม่มีออเดอร์ในคิวห้องครัวขณะนี้</strong>
+              <p style="font-size: 13px; margin: 6px 0 0 0;">ออเดอร์จากการกดคิดเงินที่หน้าร้าน POS จะเด้งเข้ามาเตรียมอาหารที่นี่อัตโนมัติ</p>
+            </div>
+          `;
+          return;
+        }
+
+        const channelBadges = {
+          'walkin': '<span class="product-cat-tag">🏪 หน้าร้าน</span>',
+          'grab': '<span class="product-cat-tag" style="background:#e6fcf5; color:#0ca678;">🟢 Grab</span>',
+          'shopee': '<span class="product-cat-tag" style="background:#fff4e6; color:#f76707;">🟠 Shopee</span>',
+          'lineman': '<span class="product-cat-tag" style="background:#e6fcf5; color:#0ca678;">🟢 Lineman</span>'
+        };
+
+        let html = '';
+        activeTickets.forEach(ticket => {
+          // Check if ticket is older than 5 minutes for urgent highlight
+          const elapsedMs = Date.now() - new Date(ticket.datetime).getTime();
+          const elapsedMins = Math.floor(elapsedMs / 1000 / 60);
+          const isUrgent = elapsedMins >= 5;
+
+          let itemsHtml = '';
+          ticket.items.forEach((item, index) => {
+            itemsHtml += `
+              <div class="kitchen-ticket-item">
+                <label style="display:flex; align-items:center; gap: 8px; cursor:pointer; width:100%;">
+                  <input type="checkbox" style="width:16px; height:16px; accent-color: var(--brand);" 
+                    ${item.done ? 'checked' : ''} data-ticket-id="${ticket.id}" data-item-index="${index}" class="kitchen-item-checkbox">
+                  <span style="${item.done ? 'text-decoration: line-through; color: var(--muted);' : 'font-weight:700;'}">
+                    ${item.qty} x ${escapeHtml(item.name)}
+                  </span>
+                </label>
+              </div>
+            `;
+          });
+
+          html += `
+            <div class="kitchen-ticket" id="ticket-${ticket.id}">
+              <div class="kitchen-ticket-header ${isUrgent ? 'urgent' : ''}">
+                <div>
+                  <strong style="font-size:16px; color: var(--brand);">${ticket.orderNo}</strong>
+                  <div style="font-size:11px; color: var(--muted); margin-top:2px;">ผ่านไป: ${elapsedMins} นาที</div>
+                </div>
+                ${channelBadges[ticket.channel] || ''}
+              </div>
+              <div class="kitchen-ticket-body">
+                ${itemsHtml}
+              </div>
+              <div class="kitchen-ticket-footer">
+                <button type="button" class="btn btn-primary btn-sm" style="width:100%;" data-complete-ticket="${ticket.id}">
+                  ✔ จัดส่ง/ทำเสร็จคิวนี้
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        kitchenOrdersContainer.innerHTML = html;
+      }
+
+      // Handle Kitchen Order Ticket checkboxes & completion
+      kitchenOrdersContainer.addEventListener('click', (e) => {
+        // 1. Toggle specific item check
+        if (e.target.classList.contains('kitchen-item-checkbox')) {
+          const ticketId = Number(e.target.getAttribute('data-ticket-id'));
+          const itemIdx = Number(e.target.getAttribute('data-item-index'));
+          const ticket = kitchenOrders.find(o => o.id === ticketId);
+          if (ticket && ticket.items[itemIdx]) {
+            ticket.items[itemIdx].done = e.target.checked;
+            renderKitchenQueue();
+          }
+          return;
+        }
+
+        // 2. Mark entire ticket as completed
+        const completeBtn = e.target.closest('[data-complete-ticket]');
+        if (completeBtn) {
+          const ticketId = Number(completeBtn.getAttribute('data-complete-ticket'));
+          const ticket = kitchenOrders.find(o => o.id === ticketId);
+          if (ticket) {
+            ticket.status = 'completed';
+            renderKitchenQueue();
+          }
+        }
+      });
+
+      // Spoilage waste reporting
+      function openWasteModal(ingredientId) {
+        const ing = ingredients.find(i => i.id === ingredientId);
+        if (!ing) return;
+
+        wasteIngId.value = String(ing.id);
+        wasteIngNameLabel.textContent = `วัตถุดิบ: ${ing.name}`;
+        wasteUnitLabel.textContent = ing.unit;
+        wasteQtyInput.value = '';
+        wasteModalError.textContent = '';
+        wasteSpoilageModal.classList.add('open');
+        wasteQtyInput.focus();
+      }
+
+      btnCloseWaste.addEventListener('click', () => {
+        wasteSpoilageModal.classList.remove('open');
+      });
+
+      btnConfirmWaste.addEventListener('click', () => {
+        const id = Number(wasteIngId.value);
+        const qtyVal = wasteQtyInput.value.trim();
+        const ing = ingredients.find(i => i.id === id);
+
+        if (!ing) return;
+
+        const qty = Number(qtyVal);
+        if (qtyVal === '' || isNaN(qty) || qty <= 0) {
+          wasteModalError.textContent = 'กรุณาระบุจำนวนที่คัดทิ้งเสียหายให้ถูกต้อง (มากกว่า 0)';
+          wasteQtyInput.focus();
+          return;
+        }
+
+        if (qty > ing.stock) {
+          wasteModalError.textContent = `จำนวนที่ต้องการคัดทิ้ง (${qty}) มากกว่าจำนวนสต็อกปัจจุบัน (${ing.stock})`;
+          wasteQtyInput.focus();
+          return;
+        }
+
+        // Apply waste reduction
+        ing.stock = Math.max(0, ing.stock - qty);
+        ing.totalWasted = (ing.totalWasted || 0) + qty;
+
+        // Log to waste history
+        const wasteCost = qty * ing.cost;
+        wasteHistory.push({
+          ingredientId: ing.id,
+          name: ing.name,
+          qty: qty,
+          cost: wasteCost,
+          datetime: new Date().toISOString()
+        });
+
+        wasteSpoilageModal.classList.remove('open');
+        saveState();
+        renderAll();
+      });
+
+      // Analytical Reports Panel Render
+      function renderReports() {
+        // Calculate Totals
+        let totalRevenue = 0;
+        let totalCogs = 0;
+        salesHistory.forEach(sale => {
+          totalRevenue += sale.total;
+          totalCogs += sale.totalCost;
+        });
+
+        let totalWasteCostVal = 0;
+        wasteHistory.forEach(waste => {
+          totalWasteCostVal += waste.cost;
+        });
+
+        const grossProfit = totalRevenue - totalCogs - totalWasteCostVal;
+
+        // Render Cards
+        repRevenue.textContent = formatCurrency(totalRevenue);
+        repCogs.textContent = formatCurrency(totalCogs);
+        repWasteCost.textContent = formatCurrency(totalWasteCostVal);
+        repProfit.textContent = formatCurrency(grossProfit);
+
+        // Render Spoilage percentages table
+        if (ingredients.length === 0) {
+          wasteReportTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--muted); padding: 16px;">ยังไม่มีข้อมูลคลังวัตถุดิบ</td></tr>`;
+        } else {
+          let html = '';
+          ingredients.forEach(ing => {
+            const wastedAmount = ing.totalWasted || 0;
+            const wasteCostAmount = wastedAmount * ing.cost;
+            const totalSupplied = ing.stock + wastedAmount; // rough approximation
+            const wastePercentage = totalSupplied > 0 ? (wastedAmount / totalSupplied) * 100 : 0;
+
+            html += `
+              <tr>
+                <td><strong>${escapeHtml(ing.name)}</strong></td>
+                <td class="num">${formatCurrency(ing.cost)} / ${escapeHtml(ing.unit)}</td>
+                <td class="num">${ing.stock.toLocaleString('th-TH')} ${escapeHtml(ing.unit)}</td>
+                <td class="num" style="color: var(--danger); font-weight:700;">${wastedAmount.toLocaleString('th-TH')} ${escapeHtml(ing.unit)}</td>
+                <td class="num" style="color: var(--danger);">${formatCurrency(wasteCostAmount)}</td>
+                <td class="num">
+                  <span class="stock-text out" style="font-weight: 700; font-size: 13px;">${wastePercentage.toFixed(1)}%</span>
+                </td>
+              </tr>
+            `;
+          });
+          wasteReportTableBody.innerHTML = html;
+        }
+
+        // Render menu cost margins table
+        if (products.length === 0) {
+          menuCogsTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--muted); padding: 16px;">ยังไม่มีข้อมูลเมนูสินค้า</td></tr>`;
+        } else {
+          let html = '';
+          products.forEach(p => {
+            const cogs = getProductRecipeCost(p);
+            const price = p.price;
+            const profit = price - cogs;
+            const marginPercentage = price > 0 ? (profit / price) * 100 : 0;
+
+            let marginColor = 'var(--success)';
+            if (marginPercentage < 40) marginColor = 'var(--danger)';
+            else if (marginPercentage < 60) marginColor = 'var(--warning)';
+
+            html += `
+              <tr>
+                <td><strong>${escapeHtml(p.name)}</strong></td>
+                <td class="num" style="font-weight:700; color: var(--brand);">${formatCurrency(price)}</td>
+                <td class="num">${formatCurrency(cogs)}</td>
+                <td class="num" style="color: var(--success); font-weight:700;">${formatCurrency(profit)}</td>
+                <td class="num" style="color: ${marginColor}; font-weight:700;">${marginPercentage.toFixed(1)}%</td>
+              </tr>
+            `;
+          });
+          menuCogsTableBody.innerHTML = html;
+        }
+      }
+
+      // Dynamic builder for Recipe Formulation list inside product form
+      function renderRecipeIngredientsSelection(existingRecipe = []) {
+        if (ingredients.length === 0) {
+          recipeIngredientsList.innerHTML = `
+            <div style="font-size:12px; color:var(--muted); text-align:center; padding:12px;">
+              ยังไม่มีข้อมูลในคลังวัตถุดิบ กรุณาเพิ่มวัตถุดิบในแถบ "จัดการคลังวัตถุดิบหลังร้าน" ก่อนสร้างสูตรผลิต
+            </div>
+          `;
+          return;
+        }
+
+        let html = '';
+        ingredients.forEach(ing => {
+          // Check if this ingredient is currently in the recipe
+          const recItem = existingRecipe.find(r => r.ingredientId === ing.id);
+          const checked = recItem ? 'checked' : '';
+          const amountValue = recItem ? recItem.amount : '';
+
+          html += `
+            <div class="recipe-ingredient-row">
+              <label style="display: flex; align-items: center; gap: 6px; font-size:13px; flex: 1; min-width: 140px; cursor: pointer;">
+                <input type="checkbox" class="recipe-checkbox" data-ing-id="${ing.id}" ${checked}>
+                <span style="font-weight: 500;">${escapeHtml(ing.name)}</span>
+              </label>
+              <div style="display: flex; align-items: center; gap: 4px; width: 130px;">
+                <input type="number" class="input recipe-amount-input" style="padding: 4px 8px; font-size:12px; height:28px;" 
+                  placeholder="ปริมาณใช้" min="0.01" step="any" value="${amountValue}" data-ing-id="${ing.id}">
+                <span style="font-size:12px; color:var(--muted); white-space:nowrap; width:45px;">${escapeHtml(ing.unit)}</span>
+              </div>
+            </div>
+          `;
+        });
+        recipeIngredientsList.innerHTML = html;
+      }
+
+      // Back-office Products Management
+      function resetStockForm() {
+        editProductIdInput.value = '';
+        prodNameInput.value = '';
+        prodSkuInput.value = '';
+        prodCategoryInput.value = '';
+        prodPriceInput.value = '';
+        prodStockType.value = 'direct';
+        directStockGroup.style.display = 'block';
+        recipeIngredientsGroup.style.display = 'none';
+        prodStockInput.value = '';
+        prodDirectCostInput.value = '';
+        prodLowLimit.value = '5';
+        prodImageFileInput.value = '';
+        prodImageDataInput.value = '';
+        prodImagePreview.src = '';
+        prodImagePreview.style.display = 'none';
+        btnRemoveProdImage.style.display = 'none';
+        stockFormError.textContent = '';
+        stockFormTitle.textContent = 'เพิ่มสินค้าเข้าสต็อก';
+        saveProductBtn.textContent = 'บันทึกสินค้า';
+        cancelEditBtn.style.display = 'none';
+      }
+
+      cancelEditBtn.addEventListener('click', resetStockForm);
+
+      stockForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = prodNameInput.value.trim();
+        const sku = prodSkuInput.value.trim();
+        const category = prodCategoryInput.value.trim() || 'ทั่วไป';
+        const priceVal = prodPriceInput.value.trim();
+        const stockType = prodStockType.value;
+        const imageData = prodImageDataInput.value;
+        const lowLimitVal = prodLowLimit.value.trim();
+
+        if (!name) {
+          stockFormError.textContent = 'กรุณาระบุชื่อสินค้า';
+          prodNameInput.focus();
+          return;
+        }
+
+        const price = Number(priceVal);
+        if (priceVal === '' || isNaN(price) || price < 0) {
+          stockFormError.textContent = 'กรุณาระบุราคาขายที่ถูกต้อง (0 ขึ้นไป)';
+          prodPriceInput.focus();
+          return;
+        }
+
+        const customLowLimit = Number(lowLimitVal);
+        if (lowLimitVal === '' || isNaN(customLowLimit) || customLowLimit < 0) {
+          stockFormError.textContent = 'กรุณาระบุเกณฑ์แจ้งเตือนสต็อกเหลือน้อยให้ถูกต้อง';
+          prodLowLimit.focus();
+          return;
+        }
+
+        let stock = 0;
+        let directCost = 0;
+        let finalRecipe = [];
+
+        if (stockType === 'direct') {
+          const stockVal = prodStockInput.value.trim();
+          stock = Number(stockVal);
+          if (stockVal === '' || isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
+            stockFormError.textContent = 'กรุณาระบุจำนวนสต็อกเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป';
+            prodStockInput.focus();
+            return;
+          }
+
+          const costVal = prodDirectCostInput.value.trim();
+          directCost = Number(costVal);
+          if (costVal === '' || isNaN(directCost) || directCost < 0) {
+            stockFormError.textContent = 'กรุณาระบุต้นทุนที่ถูกต้อง (0 ขึ้นไป)';
+            prodDirectCostInput.focus();
+            return;
+          }
+        } else {
+          // If recipe-based formulation
+          const rows = recipeIngredientsList.querySelectorAll('.recipe-ingredient-row');
+          let validationOk = true;
+
+          rows.forEach(row => {
+            const checkbox = row.querySelector('.recipe-checkbox');
+            const amountInput = row.querySelector('.recipe-amount-input');
+            const ingId = Number(checkbox.getAttribute('data-ing-id'));
+
+            if (checkbox.checked) {
+              const amount = Number(amountInput.value);
+              if (isNaN(amount) || amount <= 0) {
+                validationOk = false;
+                amountInput.focus();
+              } else {
+                finalRecipe.push({
+                  ingredientId: ingId,
+                  amount: amount
+                });
+              }
+            }
+          });
+
+          if (!validationOk) {
+            stockFormError.textContent = 'กรุณาระบุปริมาณการใช้วัตถุดิบให้ถูกต้องสำหรับตัวเลือกที่ติ๊กถูก';
+            return;
+          }
+
+          if (finalRecipe.length === 0) {
+            stockFormError.textContent = 'สำหรับประเภทอาหาร/เครื่องดื่ม คุณต้องติ๊กเลือกวัตถุดิบในสูตรผลิตอย่างน้อย 1 ชนิด';
+            return;
+          }
+        }
+
+        const editingId = editProductIdInput.value ? Number(editProductIdInput.value) : null;
+
+        if (editingId) {
+          const existing = products.find(p => p.id === editingId);
+          if (existing) {
+            existing.name = name;
+            existing.sku = sku;
+            existing.category = category;
+            existing.price = price;
+            existing.stockType = stockType;
+            existing.stock = stockType === 'direct' ? stock : 0;
+            existing.directCost = stockType === 'direct' ? directCost : 0;
+            existing.lowStockLimit = customLowLimit;
+            existing.recipe = stockType === 'recipe' ? finalRecipe : [];
+            existing.image = imageData;
+          }
+        } else {
+          products.push({
+            id: nextId++,
+            name,
+            sku,
+            category,
+            price,
+            stockType,
+            stock: stockType === 'direct' ? stock : 0,
+            directCost: stockType === 'direct' ? directCost : 0,
+            lowStockLimit: customLowLimit,
+            recipe: stockType === 'recipe' ? finalRecipe : [],
+            image: imageData
+          });
+        }
+
+        resetStockForm();
+        saveState();
+        renderAll();
+      });
+
+      function renderStockTable() {
+        if (products.length === 0) {
+          stockTableContainer.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </div>
+              <h3 class="empty-title">คลังสินค้าว่างเปล่า</h3>
+              <p class="empty-desc">กรอกข้อมูลสินค้าและเลือกใส่ภาพประกอบในแบบฟอร์มด้านซ้ายเพื่อเพิ่มสินค้าเข้าสู่ระบบสต็อก</p>
+            </div>
+          `;
+          return;
+        }
+
+        const filtered = products.filter(p => {
+          if (!stockSearchQuery) return true;
+          return p.name.toLowerCase().includes(stockSearchQuery) ||
+            (p.sku && p.sku.toLowerCase().includes(stockSearchQuery)) ||
+            (p.category && p.category.toLowerCase().includes(stockSearchQuery));
+        });
+
+        if (filtered.length === 0) {
+          stockTableContainer.innerHTML = `
+            <div class="empty-state">
+              <h3 class="empty-title">ไม่พบรายการสินค้าที่ตรงกับคำค้นหา</h3>
+            </div>
+          `;
+          return;
+        }
+
+        let html = `
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ภาพ</th>
+                  <th>รหัส SKU</th>
+                  <th>ชื่อสินค้า / สูตรการจัดสรรคลัง</th>
+                  <th>หมวดหมู่</th>
+                  <th class="num">ราคาขาย</th>
+                  <th class="num">ต้นทุนเฉลี่ย</th>
+                  <th class="num">สต็อกพร้อมขาย</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        filtered.forEach(p => {
+          const calculatedStock = getCalculatedStock(p);
+          const calculatedCost = getProductRecipeCost(p);
+          let stockClass = '';
+          
+          // Check if custom low stock threshold is reached
+          let isLow = false;
+          if (p.stockType === 'direct') {
+            isLow = p.stock <= (p.lowStockLimit || 5);
+          } else {
+            if (p.recipe) {
+              isLow = p.recipe.some(r => {
+                const ing = ingredients.find(i => i.id === r.ingredientId);
+                return ing && ing.stock <= (ing.lowStockLimit || 100);
+              });
+            }
+          }
+
+          if (calculatedStock === 0) stockClass = 'out';
+          else if (isLow) stockClass = 'low';
+
+          // Build recipes tag view
+          let typeLabelHtml = '';
+          if (p.stockType === 'recipe' && p.recipe) {
+            typeLabelHtml = `<div style="margin-top: 4px;">`;
+            p.recipe.forEach(r => {
+              const ing = ingredients.find(i => i.id === r.ingredientId);
+              const ingName = ing ? ing.name : 'วัตถุดิบที่ถูกลบ';
+              typeLabelHtml += `<span class="recipe-tag">${escapeHtml(ingName)} ${r.amount}</span>`;
+            });
+            typeLabelHtml += `</div>`;
+          } else {
+            typeLabelHtml = `<div style="font-size:11px; color:var(--muted); margin-top:2px;">หักจากสต็อกสินค้าโดยตรง (เกณฑ์เตือน: ${p.lowStockLimit || 5})</div>`;
+          }
+
+          html += `
+            <tr>
+              <td>
+                <div class="table-thumbnail">
+                  ${p.image 
+                    ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">`
+                    : `<span style="font-size: 16px;">📦</span>`
+                  }
+                </div>
+              </td>
+              <td><span class="product-sku">${escapeHtml(p.sku || '-')}</span></td>
+              <td>
+                <strong>${escapeHtml(p.name)}</strong>
+                ${typeLabelHtml}
+              </td>
+              <td><span class="product-cat-tag">${escapeHtml(p.category || 'ทั่วไป')}</span></td>
+              <td class="num">${formatCurrency(p.price)}</td>
+              <td class="num" style="color: var(--muted);">${formatCurrency(calculatedCost)}</td>
+              <td class="num">
+                ${p.stockType === 'direct' ? `
+                  <div class="stock-adjust-group">
+                    <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-stock-adj="${p.id}" data-delta="-1" ${p.stock <= 0 ? 'disabled' : ''} title="ลดสต็อก 1 ชิ้น">-</button>
+                    <span class="stock-text ${stockClass}" style="min-width: 42px; text-align:center; font-size:14px;">${p.stock}</span>
+                    <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-stock-adj="${p.id}" data-delta="1" title="เพิ่มสต็อก 1 ชิ้น">+</button>
+                  </div>
+                ` : `
+                  <span class="stock-text ${stockClass}" style="font-size:14px; font-weight:700;">จัดเตรียมได้ ${calculatedStock}</span>
+                `}
+              </td>
+              <td class="num">
+                <div class="row-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" data-edit-id="${p.id}">แก้ไข</button>
+                  <button type="button" class="btn btn-danger-ghost" data-delete-id="${p.id}">ลบ</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+        stockTableContainer.innerHTML = html;
+      }
+
+      stockTableContainer.addEventListener('click', (e) => {
+        const adjBtn = e.target.closest('[data-stock-adj]');
+        if (adjBtn && !adjBtn.disabled) {
+          const id = Number(adjBtn.getAttribute('data-stock-adj'));
+          const delta = Number(adjBtn.getAttribute('data-delta'));
+          const prod = products.find(p => p.id === id);
+          if (prod && prod.stockType === 'direct') {
+            prod.stock = Math.max(0, prod.stock + delta);
+            saveState();
+            renderAll();
+          }
+          return;
+        }
+
+        const editBtn = e.target.closest('[data-edit-id]');
+        if (editBtn) {
+          const id = Number(editBtn.getAttribute('data-edit-id'));
+          const prod = products.find(p => p.id === id);
+          if (prod) {
+            editProductIdInput.value = String(prod.id);
+            prodNameInput.value = prod.name;
+            prodSkuInput.value = prod.sku || '';
+            prodCategoryInput.value = prod.category || '';
+            prodPriceInput.value = String(prod.price);
+            prodStockType.value = prod.stockType || 'direct';
+            prodLowLimit.value = String(prod.lowStockLimit || 5);
+
+            if (prod.stockType === 'recipe') {
+              directStockGroup.style.display = 'none';
+              recipeIngredientsGroup.style.display = 'block';
+              renderRecipeIngredientsSelection(prod.recipe || []);
+            } else {
+              directStockGroup.style.display = 'block';
+              recipeIngredientsGroup.style.display = 'none';
+              prodStockInput.value = String(prod.stock || 0);
+              prodDirectCostInput.value = String(prod.directCost || 0);
+            }
+            
+            // Set image state
+            if (prod.image) {
+              prodImageDataInput.value = prod.image;
+              prodImagePreview.src = prod.image;
+              prodImagePreview.style.display = 'block';
+              btnRemoveProdImage.style.display = 'inline-flex';
+            } else {
+              prodImageDataInput.value = '';
+              prodImagePreview.src = '';
+              prodImagePreview.style.display = 'none';
+              btnRemoveProdImage.style.display = 'none';
+            }
+
+            stockFormError.textContent = '';
+            stockFormTitle.textContent = 'แก้ไขข้อมูลสินค้า';
+            saveProductBtn.textContent = 'อัปเดตสินค้า';
+            cancelEditBtn.style.display = 'inline-flex';
+            prodNameInput.focus();
+          }
+          return;
+        }
+
+        const deleteBtn = e.target.closest('[data-delete-id]');
+        if (deleteBtn) {
+          const id = Number(deleteBtn.getAttribute('data-delete-id'));
+          products = products.filter(p => p.id !== id);
+          cart = cart.filter(c => c.productId !== id);
+          if (Number(editProductIdInput.value) === id) {
+            resetStockForm();
+          }
+          saveState();
+          renderAll();
+        }
+      });
+
+
+      // raw materials (Ingredients) form and list render
+      function resetIngForm() {
+        editIngIdInput.value = '';
+        ingNameInput.value = '';
+        ingStockInput.value = '';
+        ingUnitInput.value = '';
+        ingCostInput.value = '';
+        ingWasteRateInput.value = '0';
+        ingLowLimit.value = '100';
+        ingFormError.textContent = '';
+        ingFormTitle.textContent = 'เพิ่มวัตถุดิบเข้าคลังครัว';
+        saveIngBtn.textContent = 'บันทึกวัตถุดิบ';
+        cancelEditIngBtn.style.display = 'none';
+      }
+
+      cancelEditIngBtn.addEventListener('click', resetIngForm);
+
+      ingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = ingNameInput.value.trim();
+        const stockVal = ingStockInput.value.trim();
+        const unit = ingUnitInput.value.trim();
+        const costVal = ingCostInput.value.trim();
+        const wasteVal = ingWasteRateInput.value.trim();
+        const lowLimitVal = ingLowLimit.value.trim();
+
+        if (!name) {
+          ingFormError.textContent = 'กรุณากรอกชื่อวัตถุดิบ';
+          ingNameInput.focus();
+          return;
+        }
+
+        const stock = Number(stockVal);
+        if (stockVal === '' || isNaN(stock) || stock < 0) {
+          ingFormError.textContent = 'กรุณาระบุจำนวนสต็อกเริ่มต้นให้ถูกต้อง (0 ขึ้นไป)';
+          ingStockInput.focus();
+          return;
+        }
+
+        if (!unit) {
+          ingFormError.textContent = 'กรุณาระบุหน่วยวัดปริมาณ';
+          ingUnitInput.focus();
+          return;
+        }
+
+        const cost = Number(costVal);
+        if (costVal === '' || isNaN(cost) || cost < 0) {
+          ingFormError.textContent = 'กรุณาระบุราคาซื้อหรือต้นทุนต่อหน่วยที่ถูกต้อง (0 ขึ้นไป)';
+          ingCostInput.focus();
+          return;
+        }
+
+        const wasteRate = Number(wasteVal);
+        if (isNaN(wasteRate) || wasteRate < 0 || wasteRate > 95) {
+          ingFormError.textContent = 'เปอร์เซ็นต์คัดทิ้งต้องอยู่ระหว่าง 0% ถึง 95%';
+          ingWasteRateInput.focus();
+          return;
+        }
+
+        const customLowLimit = Number(lowLimitVal);
+        if (lowLimitVal === '' || isNaN(customLowLimit) || customLowLimit < 0) {
+          ingFormError.textContent = 'กรุณาระบุเกณฑ์เตือนวัตถุดิบเหลือน้อยให้ถูกต้อง';
+          ingLowLimit.focus();
+          return;
+        }
+
+        const editingId = editIngIdInput.value ? Number(editIngIdInput.value) : null;
+
+        if (editingId) {
+          const existing = ingredients.find(i => i.id === editingId);
+          if (existing) {
+            existing.name = name;
+            existing.stock = stock;
+            existing.unit = unit;
+            existing.cost = cost;
+            existing.wasteRate = wasteRate;
+            existing.lowStockLimit = customLowLimit;
+          }
+        } else {
+          ingredients.push({
+            id: nextIngId++,
+            name,
+            stock,
+            unit,
+            cost,
+            wasteRate,
+            lowStockLimit: customLowLimit,
+            totalWasted: 0
+          });
+        }
+
+        resetIngForm();
+        saveState();
+        renderIngredientsTable();
+        renderStockTable();
+        renderPosCatalog();
+      });
+
+      function renderIngredientsTable() {
+        if (ingredients.length === 0) {
+          ingredientsTableBody.innerHTML = `
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 32px; color: var(--muted);">
+                ยังไม่มีข้อมูลวัตถุดิบในคลัง กรุณากรอกแบบฟอร์มด้านซ้ายเพื่อเพิ่มวัตถุดิบเข้าระบบสูตรผลิตอาหาร/เครื่องดื่ม
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        let html = '';
+        ingredients.forEach(ing => {
+          let stockClass = '';
+          const lowLimit = ing.lowStockLimit || 100;
+          if (ing.stock <= 0) stockClass = 'out';
+          else if (ing.stock <= lowLimit) stockClass = 'low';
+
+          html += `
+            <tr>
+              <td><span class="product-sku">ING-${ing.id}</span></td>
+              <td><strong>${escapeHtml(ing.name)}</strong></td>
+              <td class="num" style="color: var(--brand); font-weight:700;">${formatCurrency(ing.cost)}</td>
+              <td class="num"><span class="stock-text ${stockClass}" style="font-size:14px; font-weight:700;">${ing.stock.toLocaleString('th-TH', { maximumFractionDigits: 2 })}</span></td>
+              <td><span class="product-cat-tag">${escapeHtml(ing.unit)} (เกณฑ์: ${lowLimit})</span></td>
+              <td class="num">
+                <div class="stock-adjust-group">
+                  <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-ing-adj="${ing.id}" data-delta="-10" ${ing.stock <= 0 ? 'disabled' : ''} title="-10">-10</button>
+                  <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-ing-adj="${ing.id}" data-delta="-1" ${ing.stock <= 0 ? 'disabled' : ''} title="-1">-1</button>
+                  <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-ing-adj="${ing.id}" data-delta="1" title="+1">+</button>
+                  <button type="button" class="qty-btn" style="border:1px solid var(--border-strong); border-radius:6px;" data-ing-adj="${ing.id}" data-delta="10" title="+10">+10</button>
+                </div>
+              </td>
+              <td class="num">
+                <button type="button" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: color-mix(in srgb, var(--danger) 25%, var(--border));" data-open-waste-modal="${ing.id}">
+                  🗑 บันทึกคัดทิ้ง/ขยะ
+                </button>
+              </td>
+              <td class="num">
+                <div class="row-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" data-ing-edit-id="${ing.id}">แก้ไข</button>
+                  <button type="button" class="btn btn-danger-ghost" data-ing-delete-id="${ing.id}">ลบ</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+        ingredientsTableBody.innerHTML = html;
+      }
+
+      ingredientsTableBody.addEventListener('click', (e) => {
+        // 1. Adjust raw ingredient quantity
+        const adjBtn = e.target.closest('[data-ing-adj]');
+        if (adjBtn && !adjBtn.disabled) {
+          const id = Number(adjBtn.getAttribute('data-ing-adj'));
+          const delta = Number(adjBtn.getAttribute('data-delta'));
+          const ing = ingredients.find(i => i.id === id);
+          if (ing) {
+            ing.stock = Math.max(0, ing.stock + delta);
+            saveState();
+            renderIngredientsTable();
+            renderStockTable();
+            renderPosCatalog();
+          }
+          return;
+        }
+
+        // 2. Open waste reporting popup modal
+        const wasteBtn = e.target.closest('[data-open-waste-modal]');
+        if (wasteBtn) {
+          const id = Number(wasteBtn.getAttribute('data-open-waste-modal'));
+          openWasteModal(id);
+          return;
+        }
+
+        // 3. Edit raw ingredient detail
+        const editBtn = e.target.closest('[data-ing-edit-id]');
+        if (editBtn) {
+          const id = Number(editBtn.getAttribute('data-ing-edit-id'));
+          const ing = ingredients.find(i => i.id === id);
+          if (ing) {
+            editIngIdInput.value = String(ing.id);
+            ingNameInput.value = ing.name;
+            ingStockInput.value = String(ing.stock);
+            ingUnitInput.value = ing.unit;
+            ingCostInput.value = String(ing.cost);
+            ingWasteRateInput.value = String(ing.wasteRate || 0);
+            ingLowLimit.value = String(ing.lowStockLimit || 100);
+
+            ingFormError.textContent = '';
+            ingFormTitle.textContent = 'แก้ไขข้อมูลวัตถุดิบ';
+            saveIngBtn.textContent = 'อัปเดตวัตถุดิบ';
+            cancelEditIngBtn.style.display = 'inline-flex';
+            ingNameInput.focus();
+          }
+          return;
+        }
+
+        // 4. Delete raw ingredient
+        const deleteBtn = e.target.closest('[data-ing-delete-id]');
+        if (deleteBtn) {
+          const id = Number(deleteBtn.getAttribute('data-ing-delete-id'));
+          ingredients = ingredients.filter(i => i.id !== id);
+          
+          // Remove references in products recipes
+          products.forEach(p => {
+            if (p.recipe) {
+              p.recipe = p.recipe.filter(r => r.ingredientId !== id);
+            }
+          });
+
+          if (Number(editIngIdInput.value) === id) {
+            resetIngForm();
+          }
+          saveState();
+          renderIngredientsTable();
+          renderStockTable();
+          renderPosCatalog();
+        }
+      });
+
+      // Save state helper redirection
+      function renderAll() {
+        renderCategories();
+        renderPosCatalog();
+        renderCart();
+        renderStockTable();
+        renderIngredientsTable();
+        renderStaffTable();
+      }
+
+      // Initialize Multi-tenant flow on startup
+      initMultiTenant();
+
+    })();
+  </script>
+</body>
+</html>
