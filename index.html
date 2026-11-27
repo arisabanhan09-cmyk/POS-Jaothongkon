@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title id="doc-title">ระบบ POS ขายหน้าร้านและจัดการสต็อกหลังร้าน</title>
+  <title id="doc-title">ระบบ POS ขายหน้าร้านและจัดการสต็อกปรับแต่งแบรนด์ได้</title>
   <style>
     :root {
       --bg: #f4f6f8;
@@ -2424,6 +2424,9 @@
         renderStockTable();
         renderIngredientsTable();
         renderStaffTable();
+        
+        // Dynamic populating category dropdown in form
+        populateCategoryDropdown('');
       }
 
       // Initialize Multi-tenant flow on startup
